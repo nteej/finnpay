@@ -47,10 +47,11 @@
         </a>
 
         <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
-            <a href="#how-it-works" class="hover:text-[#003580] transition-colors">How it works</a>
-            <a href="#features"     class="hover:text-[#003580] transition-colors">Features</a>
-            <a href="#packages"     class="hover:text-[#003580] transition-colors">Packages</a>
-            <a href="#faq"          class="hover:text-[#003580] transition-colors">FAQ</a>
+            <a href="#how-it-works"    class="hover:text-[#003580] transition-colors">How it works</a>
+            <a href="#features"        class="hover:text-[#003580] transition-colors">Features</a>
+            <a href="#find-freelancers" class="hover:text-[#003580] transition-colors">Find Talent</a>
+            <a href="#packages"        class="hover:text-[#003580] transition-colors">Packages</a>
+            <a href="#faq"             class="hover:text-[#003580] transition-colors">FAQ</a>
         </nav>
 
         <div class="flex items-center gap-3">
@@ -343,6 +344,92 @@
                 <p class="text-sm text-slate-500 leading-relaxed">{{ $f['desc'] }}</p>
             </div>
             @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- ───────────────────── TALENT DIRECTORY ───────────────────── --}}
+<section id="find-freelancers" class="bg-white py-20 lg:py-28 border-t border-slate-100">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8">
+        <div class="text-center mb-14">
+            <span class="text-xs font-semibold uppercase tracking-widest text-[#003580] bg-[#DDEEFF] px-3 py-1.5 rounded-full">Talent Directory</span>
+            <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-800">Hire verified Sri Lankan freelancers</h2>
+            <p class="mt-3 text-slate-500 max-w-xl mx-auto">Every freelancer on FinnPay is identity-verified. Browse profiles, review work history, and connect directly.</p>
+        </div>
+
+        {{-- Published freelancer profile cards --}}
+        @if($featuredFreelancers->isNotEmpty())
+        @php $avatarColors = ['bg-[#003580]','bg-violet-600','bg-emerald-600','bg-rose-600','bg-indigo-600']; @endphp
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            @foreach($featuredFreelancers as $fp)
+            @php
+                $skills = $fp->skillsArray();
+                $color  = $avatarColors[$fp->id % count($avatarColors)];
+                $availColor = match($fp->availability) {
+                    'open'      => 'bg-emerald-100 text-emerald-700',
+                    'part_time' => 'bg-amber-100 text-amber-700',
+                    default     => 'bg-slate-100 text-slate-500',
+                };
+            @endphp
+            <a href="{{ route('freelancers.show', $fp->publicSlug()) }}"
+               class="bg-white rounded-2xl border border-slate-200 p-5 hover:border-[#003580]/30 hover:shadow-lg hover:shadow-blue-50 transition-all block">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-11 h-11 rounded-full {{ $color }} flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {{ strtoupper(substr($fp->user->name, 0, 1)) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-slate-800 truncate">{{ $fp->user->name }}</p>
+                        <p class="text-xs text-slate-500 truncate">{{ $fp->title ?: 'Freelancer' }}</p>
+                    </div>
+                    <span class="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full {{ $availColor }}">
+                        {{ $fp->availabilityLabel() }}
+                    </span>
+                </div>
+                @if($skills)
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                    @foreach(array_slice($skills, 0, 3) as $skill)
+                        <span class="text-xs bg-[#EEF4FF] text-[#003580] px-2.5 py-0.5 rounded-full font-medium">{{ $skill }}</span>
+                    @endforeach
+                    @if(count($skills) > 3)
+                        <span class="text-xs bg-slate-100 text-slate-500 px-2.5 py-0.5 rounded-full">+{{ count($skills) - 3 }}</span>
+                    @endif
+                </div>
+                @endif
+                <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                    @if($fp->hourly_rate)
+                        <span class="text-sm font-bold text-slate-800">
+                            {{ $fp->hourly_rate_currency === 'EUR' ? '€' : '$' }}{{ $fp->hourly_rate }}/hr
+                        </span>
+                    @else
+                        <span class="text-xs text-slate-400">Rate on request</span>
+                    @endif
+                    <span class="text-xs text-[#003580] font-medium">View profile →</span>
+                </div>
+            </a>
+            @endforeach
+        </div>
+        @else
+        <div class="text-center mb-12 py-10 bg-slate-50 rounded-2xl border border-slate-200">
+            <p class="text-slate-500 text-sm">No published profiles yet — <a href="{{ route('register') }}" class="text-[#003580] font-medium hover:underline">be the first to publish yours</a>.</p>
+        </div>
+        @endif
+
+        {{-- Dual CTA --}}
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{{ route('freelancers.index') }}"
+               class="inline-flex items-center gap-2 bg-[#003580] hover:bg-[#002868] text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm">
+                Browse all freelancers
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
+            </a>
+            <a href="{{ route('register') }}"
+               class="inline-flex items-center gap-2 border border-[#003580] text-[#003580] hover:bg-[#EEF4FF] font-semibold px-6 py-3 rounded-xl transition-colors text-sm">
+                Publish your profile
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+            </a>
         </div>
     </div>
 </section>

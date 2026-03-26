@@ -4,10 +4,12 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FreelancerProfileController;
 use App\Http\Controllers\PaymentReferenceController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
@@ -19,12 +21,21 @@ Route::get('/', function () {
     $eurRate = \App\Models\ExchangeRate::getRate('EUR');
     $updatedAt = \App\Models\ExchangeRate::where('is_active', true)
         ->latest('updated_at')->value('updated_at');
-    return view('landing', compact('usdRate', 'eurRate', 'updatedAt'));
+    $featuredFreelancers = \App\Models\FreelancerProfile::public()
+        ->with('user')
+        ->latest()
+        ->take(3)
+        ->get();
+    return view('landing', compact('usdRate', 'eurRate', 'updatedAt', 'featuredFreelancers'));
 })->name('home');
 
 // Public customer payment page
 Route::get('/pay/{reference}', [CustomerPaymentController::class, 'show'])->name('customer.pay');
 Route::post('/pay/{reference}', [CustomerPaymentController::class, 'pay'])->name('customer.pay.submit');
+
+// Public freelancer directory
+Route::get('/freelancers', [PublicProfileController::class, 'index'])->name('freelancers.index');
+Route::get('/freelancers/{slug}', [PublicProfileController::class, 'show'])->name('freelancers.show');
 
 // Guest routes
 Route::middleware('guest')->group(function () {
@@ -66,6 +77,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsVerified::class])->g
 
     Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
     Route::post('/packages/{package}/select', [PackageController::class, 'select'])->name('packages.select');
+
+    // Freelancer public profile management
+    Route::get('/freelancer/profile', [FreelancerProfileController::class, 'edit'])->name('freelancer.profile.edit');
+    Route::patch('/freelancer/profile', [FreelancerProfileController::class, 'update'])->name('freelancer.profile.update');
+    Route::post('/freelancer/profile/work', [FreelancerProfileController::class, 'storeWork'])->name('freelancer.profile.work.store');
+    Route::delete('/freelancer/profile/work/{entry}', [FreelancerProfileController::class, 'destroyWork'])->name('freelancer.profile.work.destroy');
 
     Route::post('/bank-accounts', [BankAccountController::class, 'store'])->name('bank-accounts.store');
     Route::delete('/bank-accounts/{bankAccount}', [BankAccountController::class, 'destroy'])->name('bank-accounts.destroy');

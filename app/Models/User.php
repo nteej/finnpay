@@ -91,6 +91,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->bankAccounts()->first();
     }
 
+    public function freelancerProfile()
+    {
+        return $this->hasOne(FreelancerProfile::class);
+    }
+
+    public function getOrCreateProfile(): FreelancerProfile
+    {
+        return $this->freelancerProfile ?? $this->freelancerProfile()->create(['user_id' => $this->id]);
+    }
+
     public function verifiedBy()
     {
         return $this->belongsTo(User::class, 'verified_by');
