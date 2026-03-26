@@ -12,10 +12,10 @@ use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
-// Landing / redirect
+// Landing page
 Route::get('/', function () {
-    return auth()->check() ? redirect('/dashboard') : redirect('/login');
-});
+    return auth()->check() ? redirect('/dashboard') : view('landing');
+})->name('home');
 
 // Public customer payment page
 Route::get('/pay/{reference}', [CustomerPaymentController::class, 'show'])->name('customer.pay');

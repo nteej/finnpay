@@ -74,7 +74,7 @@ class DatabaseSeeder extends Seeder
             'releases_per_month'   => 2,
             'release_day_1'        => 1,
             'release_day_2'        => 16,
-            'minimum_balance_lkr'  => 5000,
+            'minimum_balance_lkr'  => 50000,
             'allow_manual_release' => true,
             'sort_order'           => 2,
         ]);
@@ -82,12 +82,12 @@ class DatabaseSeeder extends Seeder
         ReleasePackage::create([
             'name'                 => 'Pro',
             'slug'                 => 'pro',
-            'description'          => 'Two releases per month with no minimum balance requirement and priority processing.',
+            'description'          => 'One releases per week with priority processing.',
             'color'                => 'amber',
-            'releases_per_month'   => 2,
+            'releases_per_month'   => 4,
             'release_day_1'        => 1,
             'release_day_2'        => 16,
-            'minimum_balance_lkr'  => 0,
+            'minimum_balance_lkr'  => 500000,
             'allow_manual_release' => true,
             'sort_order'           => 3,
         ]);

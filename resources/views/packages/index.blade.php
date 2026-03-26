@@ -14,7 +14,7 @@
                     <span class="font-bold text-slate-800 text-base">{{ $pkg->name }}</span>
                     <span class="text-xs px-2 py-0.5 rounded-full font-medium
                         {{ $pkg->color === 'amber' ? 'bg-amber-100 text-amber-700' :
-                           ($pkg->color === 'indigo' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600') }}">
+                           ($pkg->color === 'indigo' ? 'bg-[#DDEEFF] text-[#002868]' : 'bg-slate-100 text-slate-600') }}">
                         {{ $pkg->scheduleLabel() }}
                     </span>
                 </div>
@@ -45,13 +45,13 @@
                 $isCurrent   = $activeSub && $activeSub->release_package_id === $package->id;
                 $canChange   = ! $activeSub || ! $activeSub->isLocked();
                 $colorBorder = $package->color === 'amber'  ? 'border-amber-300'  :
-                              ($package->color === 'indigo' ? 'border-indigo-300' : 'border-slate-200');
+                              ($package->color === 'indigo' ? 'border-[#003580]' : 'border-slate-200');
                 $colorBg     = $package->color === 'amber'  ? 'bg-amber-50'   :
-                              ($package->color === 'indigo' ? 'bg-indigo-50'  : 'bg-slate-50');
+                              ($package->color === 'indigo' ? 'bg-[#EEF4FF]'  : 'bg-slate-50');
                 $colorBadge  = $package->color === 'amber'  ? 'bg-amber-100 text-amber-700'   :
-                              ($package->color === 'indigo' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600');
+                              ($package->color === 'indigo' ? 'bg-[#DDEEFF] text-[#002868]' : 'bg-slate-100 text-slate-600');
                 $colorBtn    = $package->color === 'amber'  ? 'bg-amber-500 hover:bg-amber-600'   :
-                              ($package->color === 'indigo' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-slate-700 hover:bg-slate-800');
+                              ($package->color === 'indigo' ? 'bg-[#003580] hover:bg-[#002868]' : 'bg-slate-700 hover:bg-slate-800');
             @endphp
             <div class="bg-white rounded-xl border {{ $isCurrent ? $colorBorder . ' ring-2 ring-offset-1 ' . str_replace('border-', 'ring-', $colorBorder) : 'border-slate-200' }} p-5 flex flex-col">
                 {{-- Header --}}

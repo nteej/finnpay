@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-100">
+<html lang="en" class="h-full bg-[#F0F6FF]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,13 +11,11 @@
 <div class="flex h-full">
 
     {{-- Sidebar --}}
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#003580] flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
         {{-- Logo --}}
-        <div class="flex items-center gap-3 px-6 py-5 border-b border-slate-700">
-            <div class="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+        <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
+            <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
+                <span class="text-[#003580] font-black text-xs tracking-tight">FP</span>
             </div>
             <span class="text-white font-bold text-lg tracking-tight">FinnPay</span>
         </div>
@@ -39,7 +37,7 @@
                 @php $active = request()->routeIs($item['route']) @endphp
                 <a href="{{ route($item['route']) }}"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                          {{ $active ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                          {{ $active ? 'bg-white/15 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -49,19 +47,19 @@
         </nav>
 
         {{-- User footer --}}
-        <div class="p-4 border-t border-slate-700">
+        <div class="p-4 border-t border-white/10">
             <div class="flex items-center gap-3 mb-3">
-                <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm font-bold">
+                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-bold">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-white text-sm font-medium truncate">{{ auth()->user()->name }}</p>
-                    <p class="text-slate-500 text-xs truncate">{{ auth()->user()->freelancer_id }}</p>
+                    <p class="text-blue-200 text-xs truncate">{{ auth()->user()->freelancer_id }}</p>
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="w-full text-left flex items-center gap-2 text-slate-400 hover:text-white text-xs transition-colors px-1">
+                <button type="submit" class="w-full text-left flex items-center gap-2 text-blue-200 hover:text-white text-xs transition-colors px-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                     </svg>
@@ -90,7 +88,7 @@
                         Add bank details
                     </a>
                 @endif
-                <a href="{{ route('references.create') }}" class="flex items-center gap-1.5 text-xs bg-indigo-600 text-white rounded-full px-3 py-1.5 hover:bg-indigo-700 transition-colors font-medium">
+                <a href="{{ route('references.create') }}" class="flex items-center gap-1.5 text-xs bg-[#003580] text-white rounded-full px-3 py-1.5 hover:bg-[#002868] transition-colors font-medium">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>

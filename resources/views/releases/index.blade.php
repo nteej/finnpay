@@ -13,7 +13,7 @@
     </div>
     <div class="flex flex-col sm:items-end gap-1.5 flex-shrink-0">
         <div class="text-xs text-slate-500">Next scheduled release</div>
-        <div class="text-lg font-bold text-indigo-700">{{ $nextRelease->format('d F Y') }}</div>
+        <div class="text-lg font-bold text-[#002868]">{{ $nextRelease->format('d F Y') }}</div>
         <div class="text-xs text-slate-400">{{ $pendingCount }} payment{{ $pendingCount !== 1 ? 's' : '' }} pending &middot;
             LKR {{ number_format($pendingBalance['lkr'], 2) }}
         </div>
@@ -95,7 +95,7 @@
                                 {{ $release->processed_at ? $release->processed_at->format('d M Y, H:i') : '—' }}
                             </td>
                             <td class="px-5 py-3.5 text-right">
-                                <a href="{{ route('releases.show', $release) }}" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium">View</a>
+                                <a href="{{ route('releases.show', $release) }}" class="text-[#003580] hover:text-[#003580] text-xs font-medium">View</a>
                             </td>
                         </tr>
                     @endforeach

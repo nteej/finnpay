@@ -257,20 +257,7 @@ This starts Laravel, the queue worker, log tailing (Pail), and Vite dev server c
 | **Freelancer ID** | `FPL-000001` |
 | **Account Holder** | Alex Rivera |
 
-The demo account is seeded with **8 real transactions** from March 2026 (imported from the PayPal CSV export):
 
-| Date | Payer | Currency | Gross | Fee | Net |
-|---|---|---|---|---|---|
-| 9 Mar | NoCopyrightSounds Limited | USD | $160.00 | $7.80 | $152.20 |
-| 10 Mar | Zero to Infinity | EUR | €37.11 | €2.35 | €34.76 |
-| 13 Mar | CBMG LLC | USD | $300.00 | — | $300.00 |
-| 14 Mar | Cresta La Cultura | EUR | €85.85 | €4.98 | €80.87 |
-| 19 Mar | ENTITY MUSIC FZCO | USD | $125.00 | $7.04 | $117.96 |
-| 21 Mar | INTERTONE LLC | USD | $90.00 | $5.15 | $84.85 |
-| 24 Mar | Andrei Shapkin | EUR | €49.48 | €3.02 | €46.46 |
-| 24 Mar | CBMG LLC | USD | $350.00 | — | $350.00 |
-
-**Totals:** $1,005.01 USD + €162.09 EUR → **LKR 349,967.65**
 
 To reset to a fresh state:
 ```bash

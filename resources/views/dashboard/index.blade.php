@@ -5,7 +5,7 @@
 {{-- Welcome banner --}}
 <div class="mb-6">
     <h2 class="text-xl font-bold text-slate-800">Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 17 ? 'afternoon' : 'evening') }}, {{ explode(' ', auth()->user()->name)[0] }}</h2>
-    <p class="text-slate-500 text-sm mt-0.5">Your freelancer ID: <span class="font-mono font-semibold text-indigo-600">{{ auth()->user()->freelancer_id }}</span></p>
+    <p class="text-slate-500 text-sm mt-0.5">Your freelancer ID: <span class="font-mono font-semibold text-[#003580]">{{ auth()->user()->freelancer_id }}</span></p>
 </div>
 
 {{-- Stats Grid --}}
@@ -56,9 +56,9 @@
     </div>
 
     {{-- Next Release --}}
-    <div class="bg-indigo-600 rounded-xl p-5 text-white">
+    <div class="bg-[#003580] rounded-xl p-5 text-white">
         <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-medium text-indigo-200 uppercase tracking-wider">Next Release</span>
+            <span class="text-xs font-medium text-blue-200 uppercase tracking-wider">Next Release</span>
             <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -66,7 +66,7 @@
             </div>
         </div>
         <p class="text-2xl font-bold">{{ $nextRelease->format('d M') }}</p>
-        <p class="text-xs text-indigo-200 mt-1">
+        <p class="text-xs text-blue-200 mt-1">
             {{ $pendingCount }} payment{{ $pendingCount !== 1 ? 's' : '' }} pending
         </p>
     </div>
@@ -77,7 +77,7 @@
     <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200">
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
             <h3 class="font-semibold text-slate-800 text-sm">Recent Transactions</h3>
-            <a href="{{ route('transactions.index') }}" class="text-xs text-indigo-600 hover:underline font-medium">View all</a>
+            <a href="{{ route('transactions.index') }}" class="text-xs text-[#003580] hover:underline font-medium">View all</a>
         </div>
 
         @if($recentTransactions->isEmpty())
@@ -88,7 +88,7 @@
                     </svg>
                 </div>
                 <p class="text-slate-500 text-sm">No transactions yet</p>
-                <a href="{{ route('references.create') }}" class="text-indigo-600 text-xs hover:underline mt-1 inline-block">Create a payment reference</a>
+                <a href="{{ route('references.create') }}" class="text-[#003580] text-xs hover:underline mt-1 inline-block">Create a payment reference</a>
             </div>
         @else
             <div class="divide-y divide-slate-100">
@@ -101,7 +101,7 @@
                             <p class="text-sm font-medium text-slate-800 truncate">{{ $tx->payer_name }}</p>
                             <p class="text-xs text-slate-400">{{ $tx->received_at->format('d M Y') }}
                                 @if($tx->paymentReference)
-                                    &middot; <span class="font-mono text-indigo-500">{{ $tx->paymentReference->reference_number }}</span>
+                                    &middot; <span class="font-mono text-[#003580]">{{ $tx->paymentReference->reference_number }}</span>
                                 @endif
                             </p>
                         </div>
@@ -125,8 +125,8 @@
             <div class="space-y-2">
                 <a href="{{ route('references.create') }}"
                    class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group">
-                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-8 h-8 bg-[#DDEEFF] rounded-lg flex items-center justify-center group-hover:bg-[#BBDDFF] transition-colors">
+                        <svg class="w-4 h-4 text-[#003580]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                     </div>
@@ -177,24 +177,24 @@
         </div>
 
         {{-- Release Schedule Info --}}
-        <div class="bg-indigo-50 rounded-xl border border-indigo-100 p-5">
-            <h3 class="font-semibold text-indigo-800 text-sm mb-2">Release Schedule</h3>
-            <p class="text-xs text-indigo-700 leading-relaxed">
+        <div class="bg-[#EEF4FF] rounded-xl border border-blue-200 p-5">
+            <h3 class="font-semibold text-[#003580] text-sm mb-2">Release Schedule</h3>
+            <p class="text-xs text-[#002868] leading-relaxed">
                 Payments are automatically released <strong>twice per month</strong> — on the <strong>1st</strong> and <strong>16th</strong> of each month.
             </p>
             <div class="mt-3 space-y-1.5">
                 <div class="flex justify-between text-xs">
-                    <span class="text-indigo-600">Next release:</span>
-                    <span class="font-semibold text-indigo-800">{{ $nextRelease->format('d F Y') }}</span>
+                    <span class="text-[#003580]">Next release:</span>
+                    <span class="font-semibold text-[#003580]">{{ $nextRelease->format('d F Y') }}</span>
                 </div>
                 <div class="flex justify-between text-xs">
-                    <span class="text-indigo-600">Currency:</span>
-                    <span class="font-semibold text-indigo-800">LKR (Sri Lankan Rupee)</span>
+                    <span class="text-[#003580]">Currency:</span>
+                    <span class="font-semibold text-[#003580]">LKR (Sri Lankan Rupee)</span>
                 </div>
                 @if($lastRelease)
                     <div class="flex justify-between text-xs">
-                        <span class="text-indigo-600">Last release:</span>
-                        <span class="font-semibold text-indigo-800">{{ $lastRelease->processed_at->format('d M Y') }}</span>
+                        <span class="text-[#003580]">Last release:</span>
+                        <span class="font-semibold text-[#003580]">{{ $lastRelease->processed_at->format('d M Y') }}</span>
                     </div>
                 @endif
             </div>

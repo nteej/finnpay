@@ -27,7 +27,7 @@
     <form method="GET" class="flex flex-wrap items-end gap-3">
         <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Status</label>
-            <select name="status" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            <select name="status" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-[#003580] focus:border-transparent">
                 <option value="">All statuses</option>
                 <option value="cleared"  {{ request('status') === 'cleared'  ? 'selected' : '' }}>Cleared</option>
                 <option value="released" {{ request('status') === 'released' ? 'selected' : '' }}>Released</option>
@@ -37,14 +37,14 @@
         <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">From</label>
             <input type="date" name="from" value="{{ request('from') }}"
-                   class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                   class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-[#003580] focus:border-transparent">
         </div>
         <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">To</label>
             <input type="date" name="to" value="{{ request('to') }}"
-                   class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                   class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-[#003580] focus:border-transparent">
         </div>
-        <button type="submit" class="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+        <button type="submit" class="bg-[#003580] text-white text-sm px-4 py-2 rounded-lg hover:bg-[#002868] transition-colors font-medium">
             Filter
         </button>
         @if(request()->hasAny(['status','from','to']))
@@ -86,7 +86,7 @@
                             <td class="px-5 py-3.5 hidden sm:table-cell">
                                 @if($tx->paymentReference)
                                     <a href="{{ route('references.show', $tx->paymentReference) }}"
-                                       class="font-mono text-xs text-indigo-600 hover:underline">
+                                       class="font-mono text-xs text-[#003580] hover:underline">
                                         {{ $tx->paymentReference->reference_number }}
                                     </a>
                                 @else

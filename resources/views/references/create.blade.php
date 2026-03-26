@@ -29,7 +29,7 @@
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Project / Work Title <span class="text-red-500">*</span></label>
                 <input type="text" name="title" value="{{ old('title') }}" required
                        class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
-                              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent"
                        placeholder="e.g. Website Design — Client ABC">
             </div>
 
@@ -37,7 +37,7 @@
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Notes <span class="text-slate-400 font-normal">(optional)</span></label>
                 <textarea name="notes" rows="3"
                           class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
-                                 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                                 focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent resize-none"
                           placeholder="Any additional details for this payment...">{{ old('notes') }}</textarea>
             </div>
 
@@ -46,14 +46,14 @@
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Expected Amount <span class="text-slate-400 font-normal">(optional)</span></label>
                     <input type="number" name="amount_requested" value="{{ old('amount_requested') }}" step="0.01" min="0"
                            class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
-                                  focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                  focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent"
                            placeholder="0.00">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Currency</label>
                     <select name="currency"
                             class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white">
+                                   focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent bg-white">
                         <option value="USD" {{ old('currency') === 'USD' ? 'selected' : '' }}>USD ($)</option>
                         <option value="EUR" {{ old('currency') === 'EUR' ? 'selected' : '' }}>EUR (€)</option>
                     </select>
@@ -64,12 +64,12 @@
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Expiry Date <span class="text-slate-400 font-normal">(optional)</span></label>
                 <input type="date" name="expires_at" value="{{ old('expires_at') }}" min="{{ now()->addDay()->format('Y-m-d') }}"
                        class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
-                              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                              focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent">
             </div>
 
             <div class="flex gap-3 pt-2">
                 <button type="submit"
-                        class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm">
+                        class="flex-1 bg-[#003580] hover:bg-[#002868] text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm">
                     Generate Reference
                 </button>
                 <a href="{{ route('references.index') }}"

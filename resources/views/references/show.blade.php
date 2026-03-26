@@ -34,17 +34,17 @@
         </div>
 
         {{-- Reference Number Display --}}
-        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 mb-5">
-            <p class="text-xs font-medium text-indigo-600 uppercase tracking-wider mb-2">Payment Reference Number</p>
+        <div class="bg-[#EEF4FF] border border-blue-200 rounded-xl p-5 mb-5">
+            <p class="text-xs font-medium text-[#003580] uppercase tracking-wider mb-2">Payment Reference Number</p>
             <div class="flex items-center gap-3">
-                <span id="refCode" class="text-2xl font-mono font-bold text-indigo-800 tracking-widest">{{ $reference->reference_number }}</span>
-                <button onclick="copyRef()" class="p-2 rounded-lg hover:bg-indigo-100 text-indigo-600 transition-colors" title="Copy">
+                <span id="refCode" class="text-2xl font-mono font-bold text-[#003580] tracking-widest">{{ $reference->reference_number }}</span>
+                <button onclick="copyRef()" class="p-2 rounded-lg hover:bg-[#DDEEFF] text-[#003580] transition-colors" title="Copy">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
                 </button>
             </div>
-            <p id="copyMsg" class="text-xs text-indigo-500 mt-1 hidden">Copied to clipboard!</p>
+            <p id="copyMsg" class="text-xs text-[#003580] mt-1 hidden">Copied to clipboard!</p>
         </div>
 
         {{-- Details Grid --}}
@@ -80,7 +80,7 @@
                 <input id="payLink" type="text" readonly
                        value="{{ route('customer.pay', $reference->reference_number) }}"
                        class="flex-1 text-xs text-slate-600 bg-transparent border-none outline-none font-mono truncate">
-                <button onclick="copyLink()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap">Copy link</button>
+                <button onclick="copyLink()" class="text-xs text-[#003580] hover:text-[#003580] font-medium whitespace-nowrap">Copy link</button>
             </div>
         </div>
 

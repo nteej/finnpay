@@ -21,7 +21,7 @@
         <p class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Your Account</p>
         <p class="text-sm font-semibold text-slate-800">{{ auth()->user()->name }}</p>
         <p class="text-xs text-slate-500">{{ auth()->user()->email }}</p>
-        <p class="text-xs font-mono text-indigo-600 mt-1">{{ auth()->user()->freelancer_id }}</p>
+        <p class="text-xs font-mono text-[#003580] mt-1">{{ auth()->user()->freelancer_id }}</p>
 
         @if(auth()->user()->rejection_reason)
             <div class="mt-3 pt-3 border-t border-slate-200">
@@ -33,7 +33,7 @@
 
     <div class="space-y-2">
         <p class="text-xs text-slate-400">
-            Already verified? <a href="{{ route('dashboard') }}" class="text-indigo-600 hover:underline">Go to dashboard</a>
+            Already verified? <a href="{{ route('dashboard') }}" class="text-[#003580] hover:underline">Go to dashboard</a>
         </p>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
