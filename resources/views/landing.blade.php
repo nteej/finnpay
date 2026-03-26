@@ -191,6 +191,40 @@
     </div>
 </section>
 
+{{-- ───────────────────── EXCHANGE RATE BAR ───────────────────── --}}
+<section class="bg-[#003580] py-3 border-t border-white/10">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2 text-xs text-blue-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Live rates &mdash;
+            @if($updatedAt)
+                updated {{ \Carbon\Carbon::parse($updatedAt)->diffForHumans() }}
+            @else
+                default rates applied
+            @endif
+        </div>
+        <div class="flex items-center gap-4 sm:gap-8">
+            <div class="flex items-center gap-2.5 text-sm">
+                <span class="text-blue-300 text-xs font-medium">USD / LKR</span>
+                <span class="text-white font-bold font-mono">{{ number_format($usdRate, 2) }}</span>
+            </div>
+            <div class="w-px h-4 bg-white/20"></div>
+            <div class="flex items-center gap-2.5 text-sm">
+                <span class="text-blue-300 text-xs font-medium">EUR / LKR</span>
+                <span class="text-white font-bold font-mono">{{ number_format($eurRate, 2) }}</span>
+            </div>
+            <div class="w-px h-4 bg-white/20"></div>
+            <button onclick="document.getElementById('converterModal').classList.remove('hidden')"
+                    class="flex items-center gap-1.5 text-xs font-semibold text-[#003580] bg-white hover:bg-blue-50 px-3 py-1.5 rounded-full transition-colors">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                Converter
+            </button>
+        </div>
+    </div>
+</section>
+
 {{-- ───────────────────── HOW IT WORKS ───────────────────── --}}
 <section id="how-it-works" class="bg-[#F0F6FF] py-20 lg:py-28">
     <div class="max-w-6xl mx-auto px-5 sm:px-8">
@@ -533,7 +567,140 @@
     </div>
 </footer>
 
-{{-- Alpine.js for FAQ accordion --}}
+{{-- ───────────────────── CURRENCY CONVERTER MODAL ───────────────────── --}}
+<div id="converterModal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+     onclick="if(event.target===this) this.classList.add('hidden')">
+
+    {{-- Backdrop --}}
+    <div class="absolute inset-0 bg-slate-900/60"></div>
+
+    {{-- Panel --}}
+    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+         x-data="converter()" x-init="init()">
+
+        {{-- Header --}}
+        <div class="bg-[#003580] px-6 py-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white font-semibold text-base">Currency Converter</p>
+                    <p class="text-blue-200 text-xs mt-0.5">Live rates from FinnPay</p>
+                </div>
+                <button onclick="document.getElementById('converterModal').classList.add('hidden')"
+                        class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            {{-- Rate pills --}}
+            <div class="flex gap-2 mt-4">
+                <span class="bg-white/10 text-blue-100 text-xs font-medium px-2.5 py-1 rounded-full">
+                    1 USD = {{ number_format($usdRate, 2) }} LKR
+                </span>
+                <span class="bg-white/10 text-blue-100 text-xs font-medium px-2.5 py-1 rounded-full">
+                    1 EUR = {{ number_format($eurRate, 2) }} LKR
+                </span>
+            </div>
+        </div>
+
+        {{-- Converter body --}}
+        <div class="p-6 space-y-4">
+
+            {{-- Amount input --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Amount</label>
+                <input type="number" x-model="amount" @input="convert()"
+                       min="0" step="any" placeholder="0.00"
+                       class="w-full border border-slate-300 rounded-xl px-4 py-3 text-lg font-semibold text-slate-800
+                              focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent">
+            </div>
+
+            {{-- From / To selectors --}}
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">From</label>
+                    <select x-model="from" @change="convert()"
+                            class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800
+                                   focus:outline-none focus:ring-2 focus:ring-[#003580] bg-white">
+                        <option value="USD">🇺🇸 USD</option>
+                        <option value="EUR">🇪🇺 EUR</option>
+                        <option value="LKR">🇱🇰 LKR</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">To</label>
+                    <select x-model="to" @change="convert()"
+                            class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800
+                                   focus:outline-none focus:ring-2 focus:ring-[#003580] bg-white">
+                        <option value="LKR">🇱🇰 LKR</option>
+                        <option value="USD">🇺🇸 USD</option>
+                        <option value="EUR">🇪🇺 EUR</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- Swap button --}}
+            <div class="flex justify-center">
+                <button @click="swap()" title="Swap currencies"
+                        class="w-9 h-9 rounded-full border-2 border-slate-200 hover:border-[#003580] hover:bg-[#EEF4FF]
+                               flex items-center justify-center transition-all group">
+                    <svg class="w-4 h-4 text-slate-400 group-hover:text-[#003580] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Result --}}
+            <div class="bg-[#EEF4FF] border border-blue-100 rounded-xl px-5 py-4">
+                <p class="text-xs text-[#003580] font-medium mb-1">Converted Amount</p>
+                <p class="text-3xl font-bold text-[#003580] font-mono" x-text="result || '—'"></p>
+                <p class="text-xs text-slate-500 mt-1.5" x-show="result">
+                    <span x-text="amount || '0'"></span> <span x-text="from"></span>
+                    = <span x-text="result"></span> <span x-text="to"></span>
+                </p>
+            </div>
+
+            {{-- Note --}}
+            <p class="text-xs text-slate-400 text-center">
+                Indicative rates only. PayPal processing fee (~4.9%) applies on actual payments.
+            </p>
+        </div>
+    </div>
+</div>
+
+{{-- Alpine.js for FAQ accordion + currency converter --}}
+<script>
+    const FP_RATES = {
+        USD: { LKR: {{ $usdRate }}, EUR: {{ round($usdRate / $eurRate, 6) }}, USD: 1 },
+        EUR: { LKR: {{ $eurRate }}, USD: {{ round($eurRate / $usdRate, 6) }}, EUR: 1 },
+        LKR: { USD: {{ round(1 / $usdRate, 8) }}, EUR: {{ round(1 / $eurRate, 8) }}, LKR: 1 },
+    };
+
+    function converter() {
+        return {
+            amount: '',
+            from:   'USD',
+            to:     'LKR',
+            result: '',
+            init() { this.convert(); },
+            convert() {
+                const amt = parseFloat(this.amount);
+                if (!amt || isNaN(amt)) { this.result = ''; return; }
+                const rate = FP_RATES[this.from]?.[this.to] ?? 1;
+                const val  = amt * rate;
+                this.result = new Intl.NumberFormat('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                }).format(val);
+            },
+            swap() {
+                [this.from, this.to] = [this.to, this.from];
+                this.convert();
+            },
+        };
+    }
+</script>
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <style>[x-cloak] { display: none !important; }</style>
 

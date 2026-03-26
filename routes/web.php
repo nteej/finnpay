@@ -14,7 +14,12 @@ use Illuminate\Support\Facades\Route;
 
 // Landing page
 Route::get('/', function () {
-    return auth()->check() ? redirect('/dashboard') : view('landing');
+    if (auth()->check()) return redirect('/dashboard');
+    $usdRate = \App\Models\ExchangeRate::getRate('USD');
+    $eurRate = \App\Models\ExchangeRate::getRate('EUR');
+    $updatedAt = \App\Models\ExchangeRate::where('is_active', true)
+        ->latest('updated_at')->value('updated_at');
+    return view('landing', compact('usdRate', 'eurRate', 'updatedAt'));
 })->name('home');
 
 // Public customer payment page
