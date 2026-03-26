@@ -2,23 +2,23 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Models\PaymentReference;
+use App\Models\Release;
+use App\Policies\PaymentReferencePolicy;
+use App\Policies\ReleasePolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
+    protected $policies = [
+        PaymentReference::class => PaymentReferencePolicy::class,
+        Release::class          => ReleasePolicy::class,
+    ];
 
-    /**
-     * Bootstrap any application services.
-     */
+    public function register(): void {}
+
     public function boot(): void
     {
-        //
+        $this->registerPolicies();
     }
 }
