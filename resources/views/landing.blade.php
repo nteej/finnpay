@@ -177,8 +177,8 @@
         <p class="text-center text-xs font-semibold uppercase tracking-widest text-slate-400 mb-6">Trusted by freelancers across Sri Lanka</p>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
             @foreach([
-                ['LKR 48M+', 'Released to banks'],
-                ['2,800+',   'Payments processed'],
+                ['LKR 5LKH+', 'Released to banks'],
+                ['20+',   'Payments processed'],
                 ['99.9%',    'Uptime reliability'],
                 ['< 24 hrs', 'Support response'],
             ] as [$stat, $label])
