@@ -32,6 +32,17 @@
             background: linear-gradient(to bottom, #003580, transparent);
             transform: translateX(-50%);
         }
+        .ticker-track {
+            display: flex;
+            align-items: center;
+            width: max-content;
+            animation: ticker 30s linear infinite;
+        }
+        .ticker-track:hover { animation-play-state: paused; }
+        @keyframes ticker {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800 antialiased">
@@ -192,31 +203,47 @@
     </div>
 </section>
 
-{{-- ───────────────────── EXCHANGE RATE BAR ───────────────────── --}}
-<section class="bg-[#003580] py-3 border-t border-white/10">
-    <div class="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="flex items-center gap-2 text-xs text-blue-200">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Live rates &mdash;
+{{-- ───────────────────── EXCHANGE RATE TICKER ───────────────────── --}}
+<section class="bg-[#003580] border-t border-white/10 overflow-hidden">
+    @php
+        $tickerItems = [
+            ['flag' => '🇺🇸', 'from' => 'USD', 'to' => '🇱🇰 LKR', 'rate' => number_format($usdRate, 2)],
+            ['flag' => '🇪🇺', 'from' => 'EUR', 'to' => '🇱🇰 LKR', 'rate' => number_format($eurRate, 2)],
+            ['flag' => '🇺🇸', 'from' => 'USD', 'to' => '🇪🇺 EUR', 'rate' => number_format($usdRate / $eurRate, 4)],
+            ['flag' => '🇪🇺', 'from' => 'EUR', 'to' => '🇺🇸 USD', 'rate' => number_format($eurRate / $usdRate, 4)],
+            ['flag' => '🇱🇰', 'from' => 'LKR', 'to' => '🇺🇸 USD', 'rate' => number_format(1 / $usdRate, 5)],
+            ['flag' => '🇱🇰', 'from' => 'LKR', 'to' => '🇪🇺 EUR', 'rate' => number_format(1 / $eurRate, 5)],
+        ];
+    @endphp
+
+    <div class="flex items-stretch">
+        {{-- Fixed: Live rates label --}}
+        <div class="flex-shrink-0 flex items-center gap-2 px-4 sm:px-6 py-2.5 border-r border-white/15 bg-[#002868]">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+            <span class="text-blue-200 text-xs font-semibold whitespace-nowrap hidden sm:inline">Live Rates</span>
             @if($updatedAt)
-                updated {{ \Carbon\Carbon::parse($updatedAt)->diffForHumans() }}
-            @else
-                default rates applied
+                <span class="text-white/30 text-xs hidden lg:inline">&mdash; {{ \Carbon\Carbon::parse($updatedAt)->diffForHumans() }}</span>
             @endif
         </div>
-        <div class="flex items-center gap-4 sm:gap-8">
-            <div class="flex items-center gap-2.5 text-sm">
-                <span class="text-blue-300 text-xs font-medium">USD / LKR</span>
-                <span class="text-white font-bold font-mono">{{ number_format($usdRate, 2) }}</span>
+
+        {{-- Scrolling ticker --}}
+        <div class="flex-1 overflow-hidden py-2.5 cursor-default" title="Hover to pause">
+            <div class="ticker-track">
+                @foreach(array_merge($tickerItems, $tickerItems) as $item)
+                    <div class="inline-flex items-center gap-2 px-5">
+                        <span class="text-base leading-none select-none">{{ $item['flag'] }}</span>
+                        <span class="text-blue-300 text-xs font-medium tracking-wide">{{ $item['from'] }}&thinsp;/&thinsp;{{ $item['to'] }}</span>
+                        <span class="text-white font-bold font-mono text-sm">{{ $item['rate'] }}</span>
+                    </div>
+                    <span class="text-white/20 text-xs select-none px-1">&#x2022;</span>
+                @endforeach
             </div>
-            <div class="w-px h-4 bg-white/20"></div>
-            <div class="flex items-center gap-2.5 text-sm">
-                <span class="text-blue-300 text-xs font-medium">EUR / LKR</span>
-                <span class="text-white font-bold font-mono">{{ number_format($eurRate, 2) }}</span>
-            </div>
-            <div class="w-px h-4 bg-white/20"></div>
+        </div>
+
+        {{-- Fixed: Converter button --}}
+        <div class="flex-shrink-0 flex items-center px-4 sm:px-6 border-l border-white/15 bg-[#002868]">
             <button onclick="document.getElementById('converterModal').classList.remove('hidden')"
-                    class="flex items-center gap-1.5 text-xs font-semibold text-[#003580] bg-white hover:bg-blue-50 px-3 py-1.5 rounded-full transition-colors">
+                    class="flex items-center gap-1.5 text-xs font-semibold text-[#003580] bg-white hover:bg-blue-50 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                 </svg>

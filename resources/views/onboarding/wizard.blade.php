@@ -42,7 +42,7 @@
     </div>
 
     {{-- Form --}}
-    <form method="POST" action="{{ route('onboarding.submit', $wizard->token) }}">
+    <form method="POST" action="{{ route('onboarding.submit', $wizard->token) }}" novalidate>
         @csrf
 
         @php $stepIndex = 0; @endphp
