@@ -26,9 +26,9 @@ class ListUsers extends ListRecords
             'pending' => Tab::make('Pending Verification')
                 ->badge(fn () => \App\Models\User::where('is_verified', false)->where('is_admin', false)->count())
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_verified', false)->where('is_admin', false)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_verified', false)->where('is_admin', false)),
             'verified' => Tab::make('Verified')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('is_verified', true)->where('is_admin', false)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_verified', true)->where('is_admin', false)),
         ];
     }
 }

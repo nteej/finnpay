@@ -2,6 +2,44 @@
 @section('title', 'Dashboard')
 
 @section('content')
+{{-- Onboarding status banners --}}
+@php $status = auth()->user()->onboardingStatus(); @endphp
+@if($status === 'no_wizard')
+    <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-4 mb-5">
+        <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+        <div>
+            <p class="text-sm font-semibold text-amber-800">Onboarding not started</p>
+            <p class="text-xs text-amber-700 mt-0.5">Your account manager will send you an onboarding questionnaire link shortly. Payment features will be enabled once complete.</p>
+        </div>
+    </div>
+@elseif($status === 'wizard_pending')
+    <div class="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-4 mb-5">
+        <svg class="w-5 h-5 text-[#003580] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+            <p class="text-sm font-semibold text-[#003580]">Complete your onboarding</p>
+            <p class="text-xs text-blue-700 mt-0.5">
+                You have a pending onboarding questionnaire.
+                <a href="{{ route('onboarding.show', auth()->user()->onboardingWizard->token) }}"
+                   class="font-semibold underline">Complete it now →</a>
+            </p>
+        </div>
+    </div>
+@elseif($status === 'pending_package')
+    <div class="flex items-start gap-3 bg-violet-50 border border-violet-200 rounded-xl px-4 py-4 mb-5">
+        <svg class="w-5 h-5 text-violet-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+            <p class="text-sm font-semibold text-violet-800">Questionnaire received — awaiting package assignment</p>
+            <p class="text-xs text-violet-700 mt-0.5">Your answers have been reviewed. Our team will assign your release package shortly and activate your account.</p>
+        </div>
+    </div>
+@endif
+
 {{-- Welcome banner --}}
 <div class="mb-6">
     <h2 class="text-xl font-bold text-slate-800">Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 17 ? 'afternoon' : 'evening') }}, {{ explode(' ', auth()->user()->name)[0] }}</h2>

@@ -91,6 +91,26 @@ class User extends Authenticatable implements FilamentUser
         return $this->bankAccounts()->first();
     }
 
+    public function onboardingWizard()
+    {
+        return $this->hasOne(OnboardingWizard::class);
+    }
+
+    public function isFullyOnboarded(): bool
+    {
+        return $this->is_verified && $this->activePackage() !== null;
+    }
+
+    public function onboardingStatus(): string
+    {
+        if (! $this->is_verified) return 'pending_verification';
+        $wizard = $this->onboardingWizard;
+        if (! $wizard)                 return 'no_wizard';
+        if (! $wizard->completed_at)   return 'wizard_pending';
+        if (! $this->activePackage())  return 'pending_package';
+        return 'active';
+    }
+
     public function freelancerProfile()
     {
         return $this->hasOne(FreelancerProfile::class);

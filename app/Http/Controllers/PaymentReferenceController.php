@@ -20,11 +20,17 @@ class PaymentReferenceController extends Controller
 
     public function create()
     {
+        if (! auth()->user()->isFullyOnboarded()) {
+            return redirect()->route('dashboard')->with('error', 'Your account setup is not complete. Please wait for your package to be assigned.');
+        }
         return view('references.create');
     }
 
     public function store(Request $request)
     {
+        if (! auth()->user()->isFullyOnboarded()) {
+            return redirect()->route('dashboard')->with('error', 'Your account setup is not complete. Please wait for your package to be assigned.');
+        }
         $data = $request->validate([
             'title'            => 'required|string|max:255',
             'notes'            => 'nullable|string|max:1000',

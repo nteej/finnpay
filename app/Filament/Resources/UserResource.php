@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Models\OnboardingWizard;
 use App\Models\ReleasePackage;
 use App\Models\User;
 use Filament\Forms\Components\Select;
@@ -19,6 +20,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class UserResource extends Resource
 {
@@ -57,10 +59,28 @@ class UserResource extends Resource
                 Tables\Columns\IconColumn::make('is_verified')->label('Verified')->boolean(),
                 Tables\Columns\IconColumn::make('is_active')->label('Active')->boolean(),
                 Tables\Columns\IconColumn::make('is_admin')->label('Admin')->boolean(),
-                Tables\Columns\TextColumn::make('activeUserPackage.package.name')
+                Tables\Columns\TextColumn::make('package')
                     ->label('Package')
-                    ->default('—')
+                    ->getStateUsing(fn (User $r) => $r->activePackage()?->name ?? '—')
                     ->badge(),
+                Tables\Columns\TextColumn::make('onboarding_status')
+                    ->label('Onboarding')
+                    ->getStateUsing(fn (User $r) => match($r->onboardingStatus()) {
+                        'no_wizard'           => 'No Link Sent',
+                        'wizard_pending'      => 'Awaiting Answers',
+                        'pending_package'     => 'Needs Package',
+                        'active'              => 'Active',
+                        'pending_verification'=> 'Unverified',
+                        default               => '—',
+                    })
+                    ->badge()
+                    ->color(fn (string $state) => match($state) {
+                        'Active'          => 'success',
+                        'Needs Package'   => 'warning',
+                        'Awaiting Answers'=> 'info',
+                        'No Link Sent'    => 'gray',
+                        default           => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('transactions_count')->label('Txns')->counts('transactions'),
                 Tables\Columns\TextColumn::make('verified_at')->label('Verified At')->dateTime('d M Y')->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Registered')->date('d M Y')->sortable(),
@@ -107,11 +127,47 @@ class UserResource extends Resource
                         Notification::make()->title('User access revoked')->warning()->send();
                     }),
 
-                FilamentAction::make('assign_package')
-                    ->label('Set Package')
-                    ->icon('heroicon-o-squares-2x2')
+                FilamentAction::make('sendWizardLink')
+                    ->label('Send Wizard Link')
+                    ->icon('heroicon-o-link')
+                    ->color('info')
+                    ->visible(fn (User $record) => $record->is_verified && ! $record->is_admin)
+                    ->fillForm(function (User $record) {
+                        $wizard = $record->onboardingWizard()->firstOrCreate(
+                            ['user_id' => $record->id],
+                            ['token' => Str::random(64), 'sent_at' => now()]
+                        );
+                        if (! $wizard->wasRecentlyCreated && ! $wizard->sent_at) {
+                            $wizard->update(['sent_at' => now()]);
+                        }
+                        return ['wizard_link' => route('onboarding.show', $wizard->token)];
+                    })
+                    ->form([
+                        TextInput::make('wizard_link')
+                            ->label('Onboarding Link')
+                            ->readOnly()
+                            ->helperText('Copy this link and send it to the freelancer to complete their onboarding questionnaire.'),
+                    ])
+                    ->modalSubmitActionLabel('Done')
+                    ->action(fn () => null),
+
+                FilamentAction::make('viewWizardAnswers')
+                    ->label('View Answers')
+                    ->icon('heroicon-o-document-text')
                     ->color('gray')
-                    ->visible(fn (User $record) => ! $record->is_admin)
+                    ->visible(fn (User $record) => $record->onboardingWizard?->isCompleted())
+                    ->modalContent(function (User $record) {
+                        $wizard = $record->onboardingWizard->load('responses.question');
+                        return view('filament.wizard-responses', compact('wizard'));
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close'),
+
+                FilamentAction::make('assign_package')
+                    ->label('Assign Package')
+                    ->icon('heroicon-o-squares-2x2')
+                    ->color('warning')
+                    ->visible(fn (User $record) => ! $record->is_admin && $record->onboardingWizard?->isCompleted() && ! $record->activePackage())
                     ->form([
                         Select::make('release_package_id')
                             ->label('Package')

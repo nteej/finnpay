@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FreelancerProfileController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PaymentReferenceController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\PackageController;
@@ -32,6 +33,10 @@ Route::get('/', function () {
 // Public customer payment page
 Route::get('/pay/{reference}', [CustomerPaymentController::class, 'show'])->name('customer.pay');
 Route::post('/pay/{reference}', [CustomerPaymentController::class, 'pay'])->name('customer.pay.submit');
+
+// Freelancer onboarding wizard (public, token-based)
+Route::get('/onboarding/{token}', [OnboardingController::class, 'show'])->name('onboarding.show');
+Route::post('/onboarding/{token}', [OnboardingController::class, 'submit'])->name('onboarding.submit');
 
 // Public freelancer directory
 Route::get('/freelancers', [PublicProfileController::class, 'index'])->name('freelancers.index');
