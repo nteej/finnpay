@@ -68,9 +68,18 @@ class ReleasePackageResource extends Resource
                 Tables\Columns\TextColumn::make('releases_per_month')->label('Releases/Month')
                     ->formatStateUsing(fn ($state) => $state === 1 ? 'Once' : 'Twice'),
                 Tables\Columns\TextColumn::make('release_day_1')->label('Day 1')
-                    ->formatStateUsing(fn ($state) => \ordinal_suffix((int) $state)),
+                    ->formatStateUsing(function ($state) {
+                        $n = (int) $state;
+                        $suffix = match (true) { $n % 100 >= 11 && $n % 100 <= 13 => 'th', $n % 10 === 1 => 'st', $n % 10 === 2 => 'nd', $n % 10 === 3 => 'rd', default => 'th' };
+                        return $n . $suffix;
+                    }),
                 Tables\Columns\TextColumn::make('release_day_2')->label('Day 2')
-                    ->formatStateUsing(fn ($state) => $state ? \ordinal_suffix((int) $state) : '—'),
+                    ->formatStateUsing(function ($state) {
+                        if (! $state) return '—';
+                        $n = (int) $state;
+                        $suffix = match (true) { $n % 100 >= 11 && $n % 100 <= 13 => 'th', $n % 10 === 1 => 'st', $n % 10 === 2 => 'nd', $n % 10 === 3 => 'rd', default => 'th' };
+                        return $n . $suffix;
+                    }),
                 Tables\Columns\TextColumn::make('minimum_balance_lkr')->label('Min. Balance')
                     ->formatStateUsing(fn ($state) => $state > 0 ? 'LKR ' . number_format($state) : 'None'),
                 Tables\Columns\IconColumn::make('allow_manual_release')->label('Manual')->boolean(),

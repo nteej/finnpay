@@ -12,7 +12,9 @@ class BankAccountController extends Controller
     {
         $data = $request->validate([
             'bank_name'           => 'required|string|max:255',
-            'bank_branch'         => 'nullable|string|max:255',
+            'bank_code'           => 'required|integer',
+            'bank_branch'         => 'required|string|max:255',
+            'branch_code'         => 'required|integer',
             'bank_account_number' => 'required|string|max:50',
             'bank_account_holder' => 'required|string|max:255',
             'currency'            => 'required|in:LKR,USD,EUR',

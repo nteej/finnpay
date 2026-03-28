@@ -1,0 +1,442 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class WizardQuestionSeeder extends Seeder
+{
+    /**
+     * Seeds the full freelancer screening questionnaire.
+     * Uses upsert on sort_order — safe to run on production (no existing questions)
+     * and idempotent on local dev (updates existing rows in-place).
+     */
+    public function run(): void
+    {
+        $questions = [
+
+            // ── Section 1: Identity & Residency ─────────────────────────────
+            [
+                'sort_order'    => 1,
+                'section'       => 'Identity & Residency',
+                'question_text' => 'Country of citizenship',
+                'helper_text'   => 'As shown on your passport or national identity card.',
+                'type'          => 'select',
+                'options'       => json_encode([
+                    'Finland', 'Estonia', 'Germany', 'France', 'Netherlands', 'Sweden',
+                    'Norway', 'Denmark', 'Spain', 'Italy', 'Poland', 'United Kingdom',
+                    'United States', 'India', 'Sri Lanka', 'Other EU/EEA country', 'Other',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 2,
+                'section'       => 'Identity & Residency',
+                'question_text' => 'Country of current tax residence',
+                'helper_text'   => 'Where you are legally obligated to file income tax. This may differ from your country of citizenship.',
+                'type'          => 'select',
+                'options'       => json_encode([
+                    'Finland', 'Estonia', 'Germany', 'France', 'Netherlands', 'Sweden',
+                    'Norway', 'Denmark', 'Spain', 'Italy', 'Poland', 'United Kingdom',
+                    'United States', 'India', 'Sri Lanka', 'Other EU/EEA country', 'Other',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 3,
+                'section'       => 'Identity & Residency',
+                'question_text' => 'Are you a Finnish tax resident?',
+                'helper_text'   => 'Answer Yes if Finland is your primary country of tax residence and you hold a Finnish tax card (verokortti).',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 4,
+                'section'       => 'Identity & Residency',
+                'question_text' => 'Are you a citizen or resident of an EU / EEA country?',
+                'helper_text'   => 'Includes all 27 EU member states plus Norway, Iceland, and Liechtenstein.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 5,
+                'section'       => 'Identity & Residency',
+                'question_text' => 'Finnish personal identity code (Henkilötunnus) — if applicable',
+                'helper_text'   => 'Format: DDMMYY-XXXX. Leave blank if you are not a Finnish resident. This is used for regulatory identity verification only.',
+                'type'          => 'text',
+                'options'       => null,
+                'is_required'   => false,
+                'is_active'     => true,
+            ],
+
+            // ── Section 2: Tax & Legal Status ────────────────────────────────
+            [
+                'sort_order'    => 6,
+                'section'       => 'Tax & Legal Status',
+                'question_text' => 'Do you operate as a private individual or a registered business entity?',
+                'helper_text'   => 'Select the structure under which you invoice your clients.',
+                'type'          => 'radio',
+                'options'       => json_encode([
+                    'Private individual (no business registration)',
+                    'Sole trader / Toiminimi (Finland)',
+                    'Limited company / Oy or Ltd',
+                    'Partnership or LLP',
+                    'Other registered entity',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 7,
+                'section'       => 'Tax & Legal Status',
+                'question_text' => 'Business registration number (Y-tunnus or national equivalent) — if applicable',
+                'helper_text'   => 'Finnish Y-tunnus format: XXXXXXX-X. Leave blank if you operate as a private individual.',
+                'type'          => 'text',
+                'options'       => null,
+                'is_required'   => false,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 8,
+                'section'       => 'Tax & Legal Status',
+                'question_text' => 'Are you VAT / ALV registered?',
+                'helper_text'   => 'In Finland, VAT registration (ALV-rekisteri) is mandatory when annual turnover exceeds €15,000.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 9,
+                'section'       => 'Tax & Legal Status',
+                'question_text' => 'VAT / ALV registration number — if registered',
+                'helper_text'   => 'Finnish format: FI + 8 digits (e.g. FI12345678). EU VAT numbers accepted.',
+                'type'          => 'text',
+                'options'       => null,
+                'is_required'   => false,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 10,
+                'section'       => 'Tax & Legal Status',
+                'question_text' => 'Have you filed income tax returns for freelance earnings in the past 2 years?',
+                'helper_text'   => 'In Finland, all freelance income must be declared to the Finnish Tax Administration (Verohallinto), regardless of amount.',
+                'type'          => 'radio',
+                'options'       => json_encode([
+                    'Yes — filed consistently each year',
+                    'Yes — filed, but only partially declared',
+                    'No — I was below the reporting threshold',
+                    'No — I have not filed',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 11,
+                'section'       => 'Tax & Legal Status',
+                'question_text' => 'Are you enrolled in self-employment pension insurance (YEL in Finland or national equivalent)?',
+                'helper_text'   => 'In Finland, YEL (Yrittäjän eläkevakuutus) is legally required for self-employed persons earning over €9,010/year. Non-compliance is a regulatory red flag.',
+                'type'          => 'radio',
+                'options'       => json_encode([
+                    'Yes — enrolled in YEL (Finland)',
+                    'Yes — enrolled in equivalent scheme in my country',
+                    'No — my earnings are below the YEL threshold',
+                    'No — I am not enrolled',
+                    'Not applicable — I am also employed under a TyEL employer',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+
+            // ── Section 3: Compliance & AML Screening ────────────────────────
+            [
+                'sort_order'    => 12,
+                'section'       => 'Compliance & AML Screening',
+                'question_text' => 'Are you, or have you ever been, a Politically Exposed Person (PEP)?',
+                'helper_text'   => 'A PEP is a person entrusted with a prominent public function — e.g. government official, senior executive of a state-owned enterprise, senior military officer, or a close family member of such a person. EU AML Directive (2015/849) requires enhanced due diligence for all PEPs.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 13,
+                'section'       => 'Compliance & AML Screening',
+                'question_text' => 'Are you subject to any financial sanctions, court orders, or asset freezes?',
+                'helper_text'   => 'Includes EU, UN, OFAC (US), and Finnish Financial Supervisory Authority (FIN-FSA) sanctions lists.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 14,
+                'section'       => 'Compliance & AML Screening',
+                'question_text' => 'Has any bank or financial institution previously closed your account for compliance or AML-related reasons?',
+                'helper_text'   => 'This includes account closures, payment blocks, or rejection of services due to suspected financial crime or policy violations.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 15,
+                'section'       => 'Compliance & AML Screening',
+                'question_text' => 'Is your freelance income derived entirely from legitimate, service-based work?',
+                'helper_text'   => 'Under the EU Anti-Money Laundering Directives (AMLD4/AMLD5/AMLD6), FinnPay is required to verify that all funds processed originate from lawful economic activity.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 16,
+                'section'       => 'Compliance & AML Screening',
+                'question_text' => 'Do you process or have access to personal data of EU citizens as part of your freelance work?',
+                'helper_text'   => 'If yes, you are considered a data controller or processor under GDPR (EU 2016/679) and are required to comply with applicable data protection obligations.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 17,
+                'section'       => 'Compliance & AML Screening',
+                'question_text' => 'Have you experienced unresolved payment disputes or chargebacks in the past 12 months?',
+                'helper_text'   => 'A high rate of disputes may indicate compliance or operational risk. Resolved disputes are acceptable — please only answer Yes for disputes that remain open or unresolved.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+
+            // ── Section 4: Earnings & Financial Profile ───────────────────────
+            [
+                'sort_order'    => 18,
+                'section'       => 'Earnings & Financial Profile',
+                'question_text' => 'Estimated average monthly freelance earnings (EUR equivalent)',
+                'helper_text'   => 'Include all freelance income converted to EUR. This helps us assign you to the appropriate release package and ensure FinnPay is a suitable service for your needs.',
+                'type'          => 'select',
+                'options'       => json_encode([
+                    'Under €500',
+                    '€500 – €1,500',
+                    '€1,500 – €3,000',
+                    '€3,000 – €6,000',
+                    '€6,000 – €10,000',
+                    'Over €10,000',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 19,
+                'section'       => 'Earnings & Financial Profile',
+                'question_text' => 'Estimated total freelance income in the last full financial year (EUR equivalent)',
+                'helper_text'   => 'This figure is used for AML risk assessment and to verify consistency with your monthly earnings estimate. Significant discrepancies may require additional documentation.',
+                'type'          => 'select',
+                'options'       => json_encode([
+                    'Under €5,000',
+                    '€5,000 – €15,000',
+                    '€15,000 – €30,000',
+                    '€30,000 – €60,000',
+                    '€60,000 – €100,000',
+                    'Over €100,000',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 20,
+                'section'       => 'Earnings & Financial Profile',
+                'question_text' => 'Currencies in which your clients pay you',
+                'helper_text'   => 'Select all that apply. FinnPay currently processes USD and EUR payments.',
+                'type'          => 'checkbox',
+                'options'       => json_encode(['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'Other']),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 21,
+                'section'       => 'Earnings & Financial Profile',
+                'question_text' => 'Primary payment method used by your clients',
+                'helper_text'   => 'Select the method through which you receive the majority of your payments. Cryptocurrency payments require additional AML screening under FIN-FSA guidance.',
+                'type'          => 'select',
+                'options'       => json_encode([
+                    'PayPal',
+                    'Bank Transfer (SWIFT / SEPA)',
+                    'Wise (TransferWise)',
+                    'Payoneer',
+                    'Stripe',
+                    'Cryptocurrency',
+                    'Other',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 22,
+                'section'       => 'Earnings & Financial Profile',
+                'question_text' => 'Largest single payment you have received from a client in the past 12 months',
+                'helper_text'   => 'Under EU AML regulations, transactions above €10,000 require enhanced due diligence. Answering accurately ensures faster processing.',
+                'type'          => 'select',
+                'options'       => json_encode([
+                    'Under €1,000',
+                    '€1,000 – €5,000',
+                    '€5,000 – €10,000',
+                    '€10,000 – €50,000',
+                    'Over €50,000',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 23,
+                'section'       => 'Earnings & Financial Profile',
+                'question_text' => 'Do you have income from sources other than freelancing (employment, investments, rental income, etc.)?',
+                'helper_text'   => 'If yes, you will be asked to briefly describe these sources. This is required for a complete financial picture under KYC guidelines.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 24,
+                'section'       => 'Earnings & Financial Profile',
+                'question_text' => 'If yes, briefly describe your other income sources',
+                'helper_text'   => 'E.g. "Part-time employment at X company", "Rental income from property in Helsinki", "Dividend income from stock portfolio".',
+                'type'          => 'textarea',
+                'options'       => null,
+                'is_required'   => false,
+                'is_active'     => true,
+            ],
+
+            // ── Section 5: Work Profile & Clients ────────────────────────────
+            [
+                'sort_order'    => 25,
+                'section'       => 'Work Profile & Clients',
+                'question_text' => 'Primary service category',
+                'helper_text'   => 'Select the category that best describes the majority of your freelance work.',
+                'type'          => 'select',
+                'options'       => json_encode([
+                    'Music & Audio Production',
+                    'Software & Technology',
+                    'Graphic Design & Creative',
+                    'Marketing & Content',
+                    'Photography & Video',
+                    'Consulting & Advisory',
+                    'Translation & Localisation',
+                    'Education & Training',
+                    'Legal or Financial Services',
+                    'Other',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 26,
+                'section'       => 'Work Profile & Clients',
+                'question_text' => 'How many active clients do you currently work with?',
+                'helper_text'   => 'Include all clients you have invoiced or worked with in the past 3 months.',
+                'type'          => 'select',
+                'options'       => json_encode(['1 – 2', '3 – 5', '6 – 10', '11 – 20', 'More than 20']),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 27,
+                'section'       => 'Work Profile & Clients',
+                'question_text' => 'Where are the majority of your clients based?',
+                'helper_text'   => 'Select all regions that apply.',
+                'type'          => 'checkbox',
+                'options'       => json_encode([
+                    'Finland',
+                    'Other EU / EEA countries',
+                    'United Kingdom',
+                    'United States & Canada',
+                    'Asia-Pacific',
+                    'Middle East & Africa',
+                    'Rest of World',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 28,
+                'section'       => 'Work Profile & Clients',
+                'question_text' => 'Does any single client account for more than 50% of your total freelance income?',
+                'helper_text'   => 'High dependency on one client is noted as a financial stability risk and may affect your package eligibility.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 29,
+                'section'       => 'Work Profile & Clients',
+                'question_text' => 'How long is your longest ongoing client relationship?',
+                'helper_text'   => 'This helps us understand the stability of your income stream.',
+                'type'          => 'select',
+                'options'       => json_encode([
+                    'Less than 6 months',
+                    '6 – 12 months',
+                    '1 – 3 years',
+                    'More than 3 years',
+                ]),
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+
+            // ── Section 6: Declaration ────────────────────────────────────────
+            [
+                'sort_order'    => 30,
+                'section'       => 'Declaration',
+                'question_text' => 'I consent to FinnPay verifying my identity and the information provided above, including checks against public financial and sanctions records where required under Finnish and EU law',
+                'helper_text'   => 'FinnPay operates under Finnish financial regulations and the EU Anti-Money Laundering Directives. Identity verification is a legal requirement for onboarding.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 31,
+                'section'       => 'Declaration',
+                'question_text' => 'I confirm that all information provided in this questionnaire is accurate, complete, and truthful. I understand that providing false or misleading information may result in immediate account suspension and reporting to the relevant authorities under Finnish law',
+                'helper_text'   => 'This declaration is required by the Finnish Act on Preventing Money Laundering and Terrorist Financing (444/2017) and the EU KYC framework.',
+                'type'          => 'boolean',
+                'options'       => null,
+                'is_required'   => true,
+                'is_active'     => true,
+            ],
+            [
+                'sort_order'    => 32,
+                'section'       => 'Declaration',
+                'question_text' => 'Any additional information you would like to share with FinnPay?',
+                'helper_text'   => 'Use this space to clarify any of the above answers or provide context that may be relevant to your application.',
+                'type'          => 'textarea',
+                'options'       => null,
+                'is_required'   => false,
+                'is_active'     => true,
+            ],
+        ];
+
+        foreach ($questions as $q) {
+            DB::table('wizard_questions')->upsert(
+                array_merge($q, ['created_at' => now(), 'updated_at' => now()]),
+                ['sort_order'],
+                ['section', 'question_text', 'helper_text', 'type', 'options', 'is_required', 'is_active', 'updated_at']
+            );
+        }
+
+        // Remove any legacy questions beyond the current set
+        DB::table('wizard_questions')
+            ->where('sort_order', '>', count($questions))
+            ->delete();
+    }
+}

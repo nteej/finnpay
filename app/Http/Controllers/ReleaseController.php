@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ExchangeRate;
 use App\Models\Release;
-use App\Models\ReleaseCycleSetting;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +24,12 @@ class ReleaseController extends Controller
         $pendingBalance = $user->pendingBalance();
         $activePackage  = $user->activeUserPackage();
 
-        return view('releases.index', compact('releases', 'nextRelease', 'pendingCount', 'pendingBalance', 'cycle', 'activePackage'));
+        // Whether freelancer already has an open (pending_approval) claim
+        $openClaim = $user->releases()->where('status', 'pending_approval')->first();
+
+        return view('releases.index', compact(
+            'releases', 'nextRelease', 'pendingCount', 'pendingBalance', 'cycle', 'activePackage', 'openClaim'
+        ));
     }
 
     public function show(Release $release)
@@ -35,35 +39,37 @@ class ReleaseController extends Controller
         return view('releases.show', compact('release'));
     }
 
-    public function process(Request $request)
+    public function claim(Request $request)
     {
-        $user  = Auth::user();
-        $cycle = $user->cycleSettings();
-
-        if (! $cycle->allow_manual_release) {
-            return back()->with('error', 'Manual releases are currently disabled. Payments will be released on the scheduled dates.');
-        }
+        $user = Auth::user();
 
         $bankAccount = $user->defaultBankAccount();
 
         if (! $bankAccount) {
-            return back()->with('error', 'Please add a bank account in your profile before requesting a release.');
+            return back()->with('error', 'Please add a bank account in your profile before raising a claim.');
+        }
+
+        if ($user->releases()->where('status', 'pending_approval')->exists()) {
+            return back()->with('error', 'You already have a payment claim awaiting admin approval.');
         }
 
         $cleared = $user->transactions()->where('status', 'cleared')->get();
 
         if ($cleared->isEmpty()) {
-            return back()->with('error', 'No cleared transactions available to release.');
+            return back()->with('error', 'No cleared transactions available to claim.');
         }
 
-        $usdRate = ExchangeRate::getRate('USD');
-        $eurRate = ExchangeRate::getRate('EUR');
-
+        $usdRate  = ExchangeRate::getRate('USD');
+        $eurRate  = ExchangeRate::getRate('EUR');
         $totalLkr = ($cleared->whereNotNull('final_usd')->sum('final_usd') * $usdRate)
                   + ($cleared->whereNotNull('final_eur')->sum('final_eur') * $eurRate);
 
+        $cycle = $user->cycleSettings();
         if ($cycle->minimum_balance_lkr > 0 && $totalLkr < $cycle->minimum_balance_lkr) {
-            return back()->with('error', 'Minimum balance of LKR ' . number_format($cycle->minimum_balance_lkr) . ' required for release. Current balance: LKR ' . number_format($totalLkr, 2));
+            return back()->with('error',
+                'Minimum balance of LKR ' . number_format($cycle->minimum_balance_lkr) .
+                ' required to raise a claim. Current balance: LKR ' . number_format($totalLkr, 2)
+            );
         }
 
         DB::transaction(function () use ($user, $cleared, $usdRate, $eurRate, $totalLkr, $bankAccount) {
@@ -84,18 +90,18 @@ class ReleaseController extends Controller
                 'bank_name'             => $bankAccount->bank_name,
                 'bank_account'          => $bankAccount->bank_account_number,
                 'bank_account_holder'   => $bankAccount->bank_account_holder,
-                'status'                => 'completed',
+                'status'                => 'pending_approval',
                 'scheduled_at'          => now(),
-                'processed_at'          => now(),
+                'claimed_at'            => now(),
             ]);
 
-            Transaction::whereIn('id', $cleared->pluck('id'))->update([
-                'status'     => 'released',
-                'release_id' => $release->id,
-            ]);
+            // Link transactions to this release so admin can review them,
+            // but keep their status as 'cleared' until admin approves.
+            Transaction::whereIn('id', $cleared->pluck('id'))
+                ->update(['release_id' => $release->id]);
         });
 
         return redirect()->route('releases.index')
-            ->with('success', 'Payment released successfully to your bank account.');
+            ->with('success', 'Your payment claim has been submitted and is awaiting admin approval.');
     }
 }

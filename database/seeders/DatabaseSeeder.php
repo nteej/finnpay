@@ -160,14 +160,9 @@ class DatabaseSeeder extends Seeder
 
         // ── Transactions from CSV (User-0001, March 2026) ────────────────────
         $transactions = [
-            ['NoCopyrightSounds Limited', 'USD', 160.00, 7.80,  0,    152.20, null,  null,  null,  0.8346, 295.00, '2026-03-09'],
-            ['Zero to Infinity',          'EUR', null,   0,     37.11, null,  2.35,  null,  34.76, null,   330.00, '2026-03-10'],
-            ['CBMG LLC',                  'USD', 300.00, 0,     0,    300.00, null,  null,  null,  0.8379, 295.00, '2026-03-13'],
-            ['Cresta La Cultura',         'EUR', null,   0,     85.85, null,  4.98,  null,  80.87, null,   330.00, '2026-03-14'],
-            ['ENTITY MUSIC',              'USD', 125.00, 7.04,  0,    117.96, null,  null,  null,  0.8393, 295.00, '2026-03-19'],
-            ['INTERTONE LLC',             'USD', 90.00,  5.15,  0,     84.85, null,  null,  null,  0.8364, 295.00, '2026-03-21'],
-            ['Andrei Shapkin',            'EUR', null,   0,     49.48, null,  3.02,  null,  46.46, null,   330.00, '2026-03-24'],
-            ['CBMG LLC',                  'USD', 350.00, 0,     0,    350.00, null,  null,  null,  0.8333, 295.00, '2026-03-24'],
+            ['NoCopyrightSounds Limited', 'USD', 160.00, 7.80,  0,    152.20, null,  null,  null,  0.8346, 307.00, '2026-03-09'],
+            ['Zero to Infinity',          'EUR', null,   0,     37.11, null,  2.35,  null,  34.76, null,   307.00, '2026-03-10'],
+            ['CBMG LLC',                  'USD', 300.00, 0,     0,    300.00, null,  null,  null,  0.8379, 307.00, '2026-03-13']
         ];
 
         foreach ($transactions as [$refKey, $ccy, $amtUsd, $feeUsd, $amtEur, $finalUsd, $feeEur, $amtEurRaw, $finalEur, $cvRate, $lkrRate, $date]) {

@@ -11,7 +11,9 @@ class Release extends Model
         'transaction_count', 'total_usd', 'total_eur', 'total_lkr',
         'exchange_rate_usd_lkr', 'exchange_rate_eur_lkr',
         'bank_name', 'bank_account', 'bank_account_holder',
-        'status', 'scheduled_at', 'processed_at', 'notes',
+        'status', 'scheduled_at', 'claimed_at', 'processed_at', 'notes',
+        'approved_by', 'approved_at',
+        'rejected_by', 'rejected_at', 'rejection_reason',
     ];
 
     protected function casts(): array
@@ -20,7 +22,10 @@ class Release extends Model
             'period_start'  => 'date',
             'period_end'    => 'date',
             'scheduled_at'  => 'datetime',
+            'claimed_at'    => 'datetime',
             'processed_at'  => 'datetime',
+            'approved_at'   => 'datetime',
+            'rejected_at'   => 'datetime',
             'total_usd'     => 'decimal:2',
             'total_eur'     => 'decimal:2',
             'total_lkr'     => 'decimal:2',
@@ -37,14 +42,26 @@ class Release extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rejectedBy()
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+
     public function getStatusBadgeAttribute(): string
     {
         return match ($this->status) {
-            'scheduled'  => 'bg-yellow-100 text-yellow-800',
-            'processing' => 'bg-blue-100 text-blue-800',
-            'completed'  => 'bg-green-100 text-green-800',
-            'failed'     => 'bg-red-100 text-red-800',
-            default      => 'bg-gray-100 text-gray-800',
+            'pending_approval' => 'bg-amber-100 text-amber-800',
+            'scheduled'        => 'bg-yellow-100 text-yellow-800',
+            'processing'       => 'bg-blue-100 text-blue-800',
+            'completed'        => 'bg-green-100 text-green-800',
+            'rejected'         => 'bg-red-100 text-red-800',
+            'failed'           => 'bg-red-100 text-red-800',
+            default            => 'bg-gray-100 text-gray-800',
         };
     }
 
@@ -56,13 +73,12 @@ class Release extends Model
 
     public static function nextReleaseDate(): \Carbon\Carbon
     {
-        $now  = now();
-        $day1 = $now->copy()->startOfMonth();
+        $now   = now();
         $day16 = $now->copy()->startOfMonth()->addDays(15);
 
         if ($now->day < 16) {
             return $day16;
         }
-        return $day1->addMonth();
+        return $now->copy()->startOfMonth()->addMonth();
     }
 }

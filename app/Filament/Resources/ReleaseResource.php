@@ -9,11 +9,13 @@ use App\Models\Transaction;
 
 use Filament\Actions\Action as FilamentAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ReleaseResource extends Resource
@@ -34,8 +36,7 @@ class ReleaseResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('release_code')->label('Code')->fontFamily('mono')->searchable(),
                 Tables\Columns\TextColumn::make('user.name')->label('Freelancer')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('period_start')->label('Period Start')->date('d M Y'),
-                Tables\Columns\TextColumn::make('period_end')->label('Period End')->date('d M Y'),
+                Tables\Columns\TextColumn::make('claimed_at')->label('Claimed')->dateTime('d M Y, H:i')->default('—'),
                 Tables\Columns\TextColumn::make('transaction_count')->label('Txns'),
                 Tables\Columns\TextColumn::make('total_lkr')
                     ->label('Total LKR')
@@ -44,49 +45,83 @@ class ReleaseResource extends Resource
                 Tables\Columns\TextColumn::make('bank_name')->label('Bank')->default('—'),
                 Tables\Columns\TextColumn::make('status')->badge()
                     ->colors([
-                        'warning' => 'scheduled',
+                        'warning' => 'pending_approval',
+                        'gray'    => 'scheduled',
                         'primary' => 'processing',
                         'success' => 'completed',
-                        'danger'  => 'failed',
+                        'danger'  => fn ($state) => in_array($state, ['failed', 'rejected']),
                     ]),
                 Tables\Columns\TextColumn::make('processed_at')->label('Processed')->dateTime('d M Y, H:i')->default('—'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->options(['scheduled' => 'Scheduled', 'processing' => 'Processing', 'completed' => 'Completed', 'failed' => 'Failed']),
+                    ->options([
+                        'pending_approval' => 'Pending Approval',
+                        'scheduled'        => 'Scheduled',
+                        'processing'       => 'Processing',
+                        'completed'        => 'Completed',
+                        'rejected'         => 'Rejected',
+                        'failed'           => 'Failed',
+                    ]),
             ])
             ->actions([
-                FilamentAction::make('process')
-                    ->label('Process Release')
-                    ->icon('heroicon-o-play')
+                // Approve a pending claim
+                FilamentAction::make('approve')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->modalHeading('Process this Release')
-                    ->modalDescription('This will mark the release as completed and update all linked transactions.')
-                    ->visible(fn (Release $record) => $record->status === 'scheduled')
+                    ->modalHeading('Approve Payment Claim')
+                    ->modalDescription('This will mark the claim as completed and release the funds to the freelancer\'s bank account.')
+                    ->visible(fn (Release $record) => $record->status === 'pending_approval')
                     ->action(function (Release $record) {
                         DB::transaction(function () use ($record) {
+                            $usdRate = ExchangeRate::getRate('USD');
+                            $eurRate = ExchangeRate::getRate('EUR');
+
                             $record->update([
-                                'status'       => 'completed',
-                                'processed_at' => now(),
-                                'exchange_rate_usd_lkr' => ExchangeRate::getRate('USD'),
-                                'exchange_rate_eur_lkr' => ExchangeRate::getRate('EUR'),
+                                'status'                => 'completed',
+                                'exchange_rate_usd_lkr' => $usdRate,
+                                'exchange_rate_eur_lkr' => $eurRate,
+                                'approved_by'           => Auth::id(),
+                                'approved_at'           => now(),
+                                'processed_at'          => now(),
                             ]);
+
                             Transaction::where('release_id', $record->id)
                                 ->update(['status' => 'released']);
                         });
-                        Notification::make()->title('Release processed successfully')->success()->send();
+                        Notification::make()->title('Claim approved — funds released to freelancer')->success()->send();
                     }),
 
-                FilamentAction::make('admin_release')
-                    ->label('Force Release for User')
-                    ->icon('heroicon-o-bolt')
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->visible(fn (Release $record) => $record->status !== 'completed')
-                    ->action(function (Release $record) {
-                        $record->update(['status' => 'completed', 'processed_at' => now()]);
-                        Notification::make()->title('Release force-completed by admin')->warning()->send();
+                // Reject a pending claim
+                FilamentAction::make('reject')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->form([
+                        Textarea::make('rejection_reason')
+                            ->label('Reason for rejection')
+                            ->required()
+                            ->rows(3)
+                            ->placeholder('Explain why this claim is being rejected…'),
+                    ])
+                    ->modalHeading('Reject Payment Claim')
+                    ->visible(fn (Release $record) => $record->status === 'pending_approval')
+                    ->action(function (Release $record, array $data) {
+                        DB::transaction(function () use ($record, $data) {
+                            // Unlink transactions so they remain cleared and claimable again
+                            Transaction::where('release_id', $record->id)
+                                ->update(['release_id' => null]);
+
+                            $record->update([
+                                'status'           => 'rejected',
+                                'rejected_by'      => Auth::id(),
+                                'rejected_at'      => now(),
+                                'rejection_reason' => $data['rejection_reason'],
+                            ]);
+                        });
+                        Notification::make()->title('Claim rejected')->danger()->send();
                     }),
 
                 ViewAction::make(),

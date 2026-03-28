@@ -174,7 +174,7 @@
                     </div>
                 </a>
 
-                <form method="POST" action="{{ route('releases.process') }}">
+                <form method="POST" action="{{ route('releases.claim') }}">
                     @csrf
                     <button type="submit" {{ $pendingCount === 0 || !auth()->user()->hasBankDetails() ? 'disabled' : '' }}
                             class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group
@@ -185,14 +185,14 @@
                             </svg>
                         </div>
                         <div class="text-left">
-                            <p class="text-sm font-medium text-slate-700">Release to Bank</p>
+                            <p class="text-sm font-medium text-slate-700">Raise Payment Claim</p>
                             <p class="text-xs text-slate-400">
                                 @if(!auth()->user()->hasBankDetails())
                                     Add bank details first
                                 @elseif($pendingCount === 0)
                                     No pending balance
                                 @else
-                                    Release {{ $pendingCount }} payment{{ $pendingCount !== 1 ? 's' : '' }}
+                                    Claim {{ $pendingCount }} payment{{ $pendingCount !== 1 ? 's' : '' }} for approval
                                 @endif
                             </p>
                         </div>

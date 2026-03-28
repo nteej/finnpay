@@ -93,7 +93,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsVerified::class])->g
 
     Route::get('/releases', [ReleaseController::class, 'index'])->name('releases.index');
     Route::get('/releases/{release}', [ReleaseController::class, 'show'])->name('releases.show');
-    Route::post('/releases/process', [ReleaseController::class, 'process'])->name('releases.process');
+    Route::post('/releases/claim', [ReleaseController::class, 'claim'])->name('releases.claim');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

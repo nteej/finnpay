@@ -115,20 +115,27 @@
                        placeholder="Name as on bank account">
             </div>
 
+            {{-- Bank dropdown (from banks.json) --}}
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Bank Name</label>
-                <input type="text" name="bank_name" value="{{ old('bank_name') }}" required
-                       class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
-                              focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent"
-                       placeholder="e.g. Commercial Bank of Ceylon">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Bank <span class="text-red-500">*</span></label>
+                <select id="bankSelect" name="bank_name" required
+                        class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
+                               focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent bg-white">
+                    <option value="">Select a bank...</option>
+                </select>
+                <input type="hidden" id="bankCodeInput" name="bank_code" value="{{ old('bank_code') }}">
             </div>
 
+            {{-- Branch dropdown (populated dynamically) --}}
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Bank Branch</label>
-                <input type="text" name="bank_branch" value="{{ old('bank_branch') }}"
-                       class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
-                              focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent"
-                       placeholder="e.g. Colombo Main Branch">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Branch <span class="text-red-500">*</span></label>
+                <select id="branchSelect" name="bank_branch" required disabled
+                        class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900
+                               focus:outline-none focus:ring-2 focus:ring-[#003580] focus:border-transparent bg-white
+                               disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed">
+                    <option value="">Select bank first...</option>
+                </select>
+                <input type="hidden" id="branchCodeInput" name="branch_code" value="{{ old('branch_code') }}">
             </div>
 
             <div>
@@ -186,4 +193,90 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+(function () {
+    const BANKS = @json(json_decode(file_get_contents(public_path('banks.json'))));
+    const oldBankCode   = {{ old('bank_code')   ? (int) old('bank_code')   : 'null' }};
+    const oldBranchCode = {{ old('branch_code') ? (int) old('branch_code') : 'null' }};
+
+    const bankSelect   = document.getElementById('bankSelect');
+    const branchSelect = document.getElementById('branchSelect');
+    const bankCodeInput   = document.getElementById('bankCodeInput');
+    const branchCodeInput = document.getElementById('branchCodeInput');
+
+    let allBranches = null; // lazy-loaded
+
+    // ── Populate bank dropdown ───────────────────────────────────────────────
+    BANKS.forEach(bank => {
+        const opt = new Option(bank.name, bank.name);
+        opt.dataset.id = bank.ID;
+        if (bank.ID === oldBankCode) opt.selected = true;
+        bankSelect.appendChild(opt);
+    });
+
+    // ── On bank change: load & filter branches ───────────────────────────────
+    bankSelect.addEventListener('change', () => {
+        const selectedOpt = bankSelect.options[bankSelect.selectedIndex];
+        const bankId = selectedOpt ? parseInt(selectedOpt.dataset.id) : null;
+
+        bankCodeInput.value = bankId || '';
+
+        // Reset branch
+        branchSelect.innerHTML = '<option value="">Loading branches...</option>';
+        branchSelect.disabled = true;
+        branchCodeInput.value = '';
+
+        if (!bankId) {
+            branchSelect.innerHTML = '<option value="">Select bank first...</option>';
+            return;
+        }
+
+        loadBranches().then(branches => {
+            populateBranches(branches[bankId] || [], oldBranchCode);
+        });
+    });
+
+    // ── On branch change: write branch code ──────────────────────────────────
+    branchSelect.addEventListener('change', () => {
+        const opt = branchSelect.options[branchSelect.selectedIndex];
+        branchCodeInput.value = opt ? (opt.dataset.id || '') : '';
+    });
+
+    // ── Lazy-load branches.json ───────────────────────────────────────────────
+    function loadBranches() {
+        if (allBranches) return Promise.resolve(allBranches);
+        return fetch('/branches.json')
+            .then(r => r.json())
+            .then(data => { allBranches = data; return data; });
+    }
+
+    function populateBranches(list, preselect) {
+        branchSelect.innerHTML = '<option value="">Select a branch...</option>';
+        list.forEach(branch => {
+            const opt = new Option(branch.name, branch.name);
+            opt.dataset.id = branch.ID;
+            if (branch.ID === preselect) opt.selected = true;
+            branchSelect.appendChild(opt);
+        });
+        branchSelect.disabled = list.length === 0;
+        if (list.length === 0) {
+            branchSelect.innerHTML = '<option value="">No branches found</option>';
+        }
+        // Restore branch code if pre-selected
+        const selected = branchSelect.options[branchSelect.selectedIndex];
+        branchCodeInput.value = selected ? (selected.dataset.id || '') : '';
+    }
+
+    // ── Restore state after validation error ─────────────────────────────────
+    if (oldBankCode) {
+        // bank dropdown already pre-selected above via BANKS loop;
+        // trigger branch load
+        const evt = new Event('change');
+        bankSelect.dispatchEvent(evt);
+    }
+})();
+</script>
+@endpush
+
 @endsection
