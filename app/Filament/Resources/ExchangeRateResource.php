@@ -37,12 +37,17 @@ class ExchangeRateResource extends Resource
                     ->options(['LKR' => 'LKR — Sri Lankan Rupee'])
                     ->default('LKR')
                     ->required(),
-                TextInput::make('rate')
-                    ->label('Exchange Rate')
+                TextInput::make('buy_rate')
+                    ->label('Buy Rate')
                     ->numeric()
                     ->step(0.0001)
                     ->required()
-                    ->helperText('e.g. 295.0000 means 1 USD = 295 LKR'),
+                    ->helperText('e.g. 310.6542 means 1 USD = 310.6542 LKR (buy)'),
+                TextInput::make('sell_rate')
+                    ->label('Sell Rate')
+                    ->numeric()
+                    ->step(0.0001)
+                    ->helperText('e.g. 318.1938 means 1 USD = 318.1938 LKR (sell)'),
                 Toggle::make('is_active')
                     ->label('Active')
                     ->default(true),
@@ -60,10 +65,13 @@ class ExchangeRateResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('currency_from')->label('From')->badge()->color('info'),
                 Tables\Columns\TextColumn::make('currency_to')->label('To')->badge()->color('success'),
-                Tables\Columns\TextColumn::make('rate')
-                    ->label('Rate')
+                Tables\Columns\TextColumn::make('buy_rate')
+                    ->label('Buy Rate')
                     ->formatStateUsing(fn ($state, $record) => "1 {$record->currency_from} = {$state} {$record->currency_to}")
                     ->weight('bold'),
+                Tables\Columns\TextColumn::make('sell_rate')
+                    ->label('Sell Rate')
+                    ->formatStateUsing(fn ($state, $record) => "1 {$record->currency_from} = {$state} {$record->currency_to}"),
                 Tables\Columns\IconColumn::make('is_active')->label('Active')->boolean(),
                 Tables\Columns\TextColumn::make('updatedBy.name')->label('Updated By')->default('—'),
                 Tables\Columns\TextColumn::make('updated_at')->label('Last Updated')->dateTime('d M Y, H:i')->sortable(),

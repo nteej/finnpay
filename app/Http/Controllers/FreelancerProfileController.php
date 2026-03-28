@@ -65,6 +65,7 @@ class FreelancerProfileController extends Controller
         ]);
 
         $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_public']   = true; // manually added entries are always public
 
         $profile = Auth::user()->getOrCreateProfile();
         $profile->workHistory()->create($data);

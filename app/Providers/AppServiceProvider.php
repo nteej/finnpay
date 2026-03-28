@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\PaymentReference;
 use App\Models\Release;
+use App\Observers\PaymentReferenceObserver;
 use App\Policies\PaymentReferencePolicy;
 use App\Policies\ReleasePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -20,5 +21,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+        PaymentReference::observe(PaymentReferenceObserver::class);
     }
 }

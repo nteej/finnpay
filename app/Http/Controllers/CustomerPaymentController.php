@@ -9,14 +9,16 @@ use Illuminate\Http\Request;
 
 class CustomerPaymentController extends Controller
 {
-    public function show(string $reference)
+    public function show(Request $request, string $reference)
     {
         $ref = PaymentReference::with('user')
             ->where('reference_number', $reference)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'paid']) // 'paid' needed for PayPal return redirect
             ->firstOrFail();
 
-        return view('customer.pay', compact('ref'));
+        $returnStatus = $request->query('status'); // 'success' | 'cancel' | null
+
+        return view('customer.pay', compact('ref', 'returnStatus'));
     }
 
     public function pay(Request $request, string $reference)

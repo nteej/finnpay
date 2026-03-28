@@ -168,10 +168,15 @@
         @if($workHistory->isNotEmpty())
         <div class="divide-y divide-slate-100">
             @foreach($workHistory as $entry)
-            <div class="flex items-start justify-between gap-3 px-6 py-4">
+            <div class="flex items-start justify-between gap-3 px-6 py-4 {{ !$entry->is_public ? 'bg-amber-50/40' : '' }}">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
                         <p class="text-sm font-medium text-slate-800">{{ $entry->project_title }}</p>
+                        @if(!$entry->is_public)
+                            <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                                Awaiting payment
+                            </span>
+                        @endif
                         @if($entry->is_featured)
                             <span class="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-medium">Featured</span>
                         @endif
@@ -184,6 +189,8 @@
                     @endif
                     @if($entry->completed_at)
                         <p class="text-xs text-slate-400 mt-0.5">{{ $entry->completed_at->format('M Y') }}</p>
+                    @elseif(!$entry->is_public && $entry->paymentReference)
+                        <p class="text-xs text-amber-600 mt-0.5">Ref: {{ $entry->paymentReference->reference_number }} — will go public once paid</p>
                     @endif
                 </div>
                 <form method="POST" action="{{ route('freelancer.profile.work.destroy', $entry) }}"

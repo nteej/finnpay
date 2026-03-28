@@ -55,6 +55,30 @@ class PaymentReferenceController extends Controller
         return view('references.show', compact('reference'));
     }
 
+    public function edit(PaymentReference $reference)
+    {
+        $this->authorize('update', $reference);
+        return view('references.edit', compact('reference'));
+    }
+
+    public function update(Request $request, PaymentReference $reference)
+    {
+        $this->authorize('update', $reference);
+
+        $data = $request->validate([
+            'title'            => 'required|string|max:255',
+            'notes'            => 'nullable|string|max:1000',
+            'amount_requested' => 'nullable|numeric|min:0',
+            'currency'         => 'required|in:USD,EUR',
+            'expires_at'       => 'nullable|date|after:today',
+        ]);
+
+        $reference->update($data);
+
+        return redirect()->route('references.show', $reference)
+            ->with('success', 'Payment reference updated.');
+    }
+
     public function destroy(PaymentReference $reference)
     {
         $this->authorize('delete', $reference);

@@ -10,15 +10,22 @@ class WorkHistoryEntry extends Model
     protected $fillable = [
         'freelancer_profile_id', 'project_title', 'description',
         'client_name', 'category', 'completed_at', 'is_featured', 'sort_order',
+        'is_public', 'payment_reference_id',
     ];
 
     protected $casts = [
         'completed_at' => 'date',
         'is_featured'  => 'boolean',
+        'is_public'    => 'boolean',
     ];
 
     public function profile(): BelongsTo
     {
         return $this->belongsTo(FreelancerProfile::class, 'freelancer_profile_id');
+    }
+
+    public function paymentReference(): BelongsTo
+    {
+        return $this->belongsTo(PaymentReference::class);
     }
 }

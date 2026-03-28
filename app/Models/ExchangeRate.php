@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class ExchangeRate extends Model
 {
     protected $fillable = [
-        'currency_from', 'currency_to', 'rate', 'is_active', 'updated_by', 'notes',
+        'currency_from', 'currency_to', 'rate_date', 'buy_rate', 'sell_rate',
+        'is_active', 'updated_by', 'notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'rate'      => 'decimal:4',
+            'rate_date' => 'date',
+            'buy_rate'  => 'decimal:4',
+            'sell_rate' => 'decimal:4',
             'is_active' => 'boolean',
         ];
     }
@@ -23,7 +26,7 @@ class ExchangeRate extends Model
         $rate = static::where('currency_from', $from)
             ->where('currency_to', $to)
             ->where('is_active', true)
-            ->value('rate');
+            ->value('buy_rate');
 
         // Fallback defaults if no DB rate exists
         return (float) ($rate ?? match($from) {

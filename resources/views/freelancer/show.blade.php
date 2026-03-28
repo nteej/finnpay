@@ -98,14 +98,15 @@
     </div>
 
     {{-- Work History --}}
-    @if($profile->workHistory->isNotEmpty())
+    @php $publicWork = $profile->publicWorkHistory; @endphp
+    @if($publicWork->isNotEmpty())
     <div class="bg-white rounded-2xl border border-slate-200">
         <div class="px-6 py-4 border-b border-slate-100">
             <h2 class="font-semibold text-slate-800">Work History</h2>
-            <p class="text-xs text-slate-500 mt-0.5">{{ $profile->workHistory->count() }} completed project{{ $profile->workHistory->count() !== 1 ? 's' : '' }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ $publicWork->count() }} completed project{{ $publicWork->count() !== 1 ? 's' : '' }}</p>
         </div>
         <div class="divide-y divide-slate-100">
-            @foreach($profile->workHistory as $entry)
+            @foreach($publicWork as $entry)
             <div class="px-6 py-4">
                 <div class="flex items-start justify-between gap-3 mb-1">
                     <div class="flex items-center gap-2">

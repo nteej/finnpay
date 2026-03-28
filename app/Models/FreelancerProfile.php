@@ -45,6 +45,11 @@ class FreelancerProfile extends Model
             ->orderByDesc('completed_at');
     }
 
+    public function publicWorkHistory(): HasMany
+    {
+        return $this->workHistory()->where('is_public', true);
+    }
+
     public function skillsArray(): array
     {
         if (empty($this->skills)) return [];

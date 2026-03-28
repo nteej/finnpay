@@ -29,9 +29,34 @@ class PaymentReference extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function workHistoryEntry()
+    {
+        return $this->hasOne(WorkHistoryEntry::class);
+    }
+
     public function totalReceived(): float
     {
         return (float) $this->transactions()->whereIn('status', ['cleared', 'released'])->sum('final_eur');
+    }
+
+    public function paypalUrl(): string
+    {
+        $params = [
+            'cmd'           => '_xclick',
+            'business'      => config('services.paypal.business_email'),
+            'currency_code' => $this->currency,
+            'item_name'     => 'FinnPay Payment - ' . $this->reference_number,
+            'custom'        => $this->reference_number,
+            'no_shipping'   => '1',
+            'return'        => route('customer.pay', $this->reference_number) . '?status=success',
+            'cancel_return' => route('customer.pay', $this->reference_number) . '?status=cancel',
+        ];
+
+        if ($this->amount_requested) {
+            $params['amount'] = number_format($this->amount_requested, 2, '.', '');
+        }
+
+        return 'https://www.paypal.com/cgi-bin/webscr?' . http_build_query($params);
     }
 
     public static function generateReference(): string

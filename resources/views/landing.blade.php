@@ -253,6 +253,283 @@
     </div>
 </section>
 
+{{-- ───────────────────── EXCHANGE RATE CHART ───────────────────── --}}
+<section id="rate-chart" class="bg-white py-16 lg:py-20 border-b border-slate-100">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8">
+
+        {{-- Header --}}
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+                <span class="text-xs font-semibold uppercase tracking-widest text-[#003580] bg-[#DDEEFF] px-3 py-1.5 rounded-full">Rate History</span>
+                <h2 class="mt-3 text-2xl sm:text-3xl font-bold text-slate-800">Currency Exchange Trends</h2>
+                <p class="mt-1.5 text-slate-500 text-sm">Buy &amp; sell rates to LKR — sourced from FinnPay market data.</p>
+            </div>
+
+            {{-- Time range tabs --}}
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl self-start sm:self-auto" id="rangeTabGroup">
+                @foreach(['30' => '1M', '90' => '3M', '180' => '6M', '365' => '1Y'] as $days => $label)
+                    <button onclick="setRange({{ $days }})"
+                            data-range="{{ $days }}"
+                            class="range-tab px-3 py-1.5 rounded-lg text-xs font-semibold transition-all {{ $days === '90' ? 'bg-white text-[#003580] shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Currency toggle --}}
+        <div class="flex items-center gap-3 mb-6">
+            <button onclick="toggleDataset('usd')" id="toggleUsd"
+                    class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border-2 border-[#003580] text-[#003580] bg-white transition-all hover:bg-[#003580] hover:text-white">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#003580] inline-block"></span>
+                USD / LKR
+            </button>
+            <button onclick="toggleDataset('eur')" id="toggleEur"
+                    class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border-2 border-amber-500 text-amber-600 bg-white transition-all hover:bg-amber-500 hover:text-white">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                EUR / LKR
+            </button>
+            <span class="text-xs text-slate-400 ml-1">Click to show/hide</span>
+        </div>
+
+        {{-- Chart card --}}
+        <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 sm:p-6">
+            <canvas id="rateChart" height="320"></canvas>
+        </div>
+
+        {{-- Stats row --}}
+        @php
+            $usdHistory = $rateHistory['USD'] ?? [];
+            $eurHistory = $rateHistory['EUR'] ?? [];
+            $last30Days = \Carbon\Carbon::now()->subDays(30)->format('Y-m-d');
+
+            $usdRecent = array_filter($usdHistory, fn($d) => $d >= $last30Days, ARRAY_FILTER_USE_KEY);
+            $eurRecent = array_filter($eurHistory, fn($d) => $d >= $last30Days, ARRAY_FILTER_USE_KEY);
+
+            $usdBuys  = array_column($usdRecent, 'buy');
+            $eurBuys  = array_column($eurRecent, 'buy');
+
+            $usdHigh  = $usdBuys ? max($usdBuys) : null;
+            $usdLow   = $usdBuys ? min($usdBuys) : null;
+            $usdRange = ($usdHigh && $usdLow) ? round($usdHigh - $usdLow, 4) : null;
+
+            $eurHigh  = $eurBuys ? max($eurBuys) : null;
+            $eurLow   = $eurBuys ? min($eurBuys) : null;
+            $eurRange = ($eurHigh && $eurLow) ? round($eurHigh - $eurLow, 4) : null;
+        @endphp
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+            @foreach([
+                ['label' => 'USD 30-day High',  'value' => $usdHigh  ? number_format($usdHigh, 2)  : '—', 'sub' => 'Buy rate to LKR', 'color' => 'text-emerald-600'],
+                ['label' => 'USD 30-day Low',   'value' => $usdLow   ? number_format($usdLow, 2)   : '—', 'sub' => 'Buy rate to LKR', 'color' => 'text-red-500'],
+                ['label' => 'EUR 30-day High',  'value' => $eurHigh  ? number_format($eurHigh, 2)  : '—', 'sub' => 'Buy rate to LKR', 'color' => 'text-emerald-600'],
+                ['label' => 'EUR 30-day Low',   'value' => $eurLow   ? number_format($eurLow, 2)   : '—', 'sub' => 'Buy rate to LKR', 'color' => 'text-red-500'],
+            ] as $stat)
+                <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+                    <p class="text-xs text-slate-500 font-medium">{{ $stat['label'] }}</p>
+                    <p class="text-xl font-bold {{ $stat['color'] }} mt-0.5 font-mono">{{ $stat['value'] }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">{{ $stat['sub'] }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- Chart.js CDN --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const RAW = {
+        USD: @json(array_map(fn($d) => $d, $rateHistory['USD'] ?? [])),
+        EUR: @json(array_map(fn($d) => $d, $rateHistory['EUR'] ?? [])),
+    };
+
+    let currentRange = 90;
+    let usdVisible   = true;
+    let eurVisible   = true;
+
+    function sliceData(currency, days) {
+        const entries = Object.entries(RAW[currency]);
+        return entries.slice(-days);
+    }
+
+    function buildDatasets(days) {
+        const usdSlice = sliceData('USD', days);
+        const eurSlice = sliceData('EUR', days);
+
+        // Use all date labels from both (merged + sorted)
+        const allDates = [...new Set([...usdSlice.map(e => e[0]), ...eurSlice.map(e => e[0])])].sort();
+
+        const usdByDate = Object.fromEntries(usdSlice);
+        const eurByDate = Object.fromEntries(eurSlice);
+
+        return {
+            labels: allDates.map(d => {
+                const dt = new Date(d);
+                return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: allDates.length > 90 ? '2-digit' : undefined });
+            }),
+            rawLabels: allDates,
+            usdBuy:  allDates.map(d => usdByDate[d]?.buy  ?? null),
+            usdSell: allDates.map(d => usdByDate[d]?.sell ?? null),
+            eurBuy:  allDates.map(d => eurByDate[d]?.buy  ?? null),
+            eurSell: allDates.map(d => eurByDate[d]?.sell ?? null),
+        };
+    }
+
+    const ctx = document.getElementById('rateChart').getContext('2d');
+
+    const baseDatasets = (data) => [
+        {
+            label: 'USD Buy',
+            data: data.usdBuy,
+            borderColor: '#003580',
+            backgroundColor: 'rgba(0,53,128,0.08)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            tension: 0.3,
+            fill: false,
+            hidden: !usdVisible,
+        },
+        {
+            label: 'USD Sell',
+            data: data.usdSell,
+            borderColor: '#003580',
+            backgroundColor: 'rgba(0,53,128,0.06)',
+            borderWidth: 1,
+            borderDash: [4, 3],
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.3,
+            fill: '-1',
+            hidden: !usdVisible,
+        },
+        {
+            label: 'EUR Buy',
+            data: data.eurBuy,
+            borderColor: '#d97706',
+            backgroundColor: 'rgba(217,119,6,0.08)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            tension: 0.3,
+            fill: false,
+            hidden: !eurVisible,
+        },
+        {
+            label: 'EUR Sell',
+            data: data.eurSell,
+            borderColor: '#d97706',
+            backgroundColor: 'rgba(217,119,6,0.06)',
+            borderWidth: 1,
+            borderDash: [4, 3],
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.3,
+            fill: '-1',
+            hidden: !eurVisible,
+        },
+    ];
+
+    let data = buildDatasets(currentRange);
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: data.labels, datasets: baseDatasets(data) },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        boxWidth: 12,
+                        boxHeight: 2,
+                        padding: 16,
+                        font: { size: 11, family: 'ui-monospace, monospace' },
+                        color: '#64748b',
+                        usePointStyle: false,
+                    },
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleColor: '#94a3b8',
+                    bodyColor: '#f1f5f9',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    padding: 10,
+                    titleFont: { size: 11 },
+                    bodyFont: { size: 12, family: 'ui-monospace, monospace' },
+                    callbacks: {
+                        title: (items) => data.rawLabels[items[0].dataIndex] ?? items[0].label,
+                        label: (item) => ` ${item.dataset.label}: ${item.parsed.y?.toFixed(4) ?? '—'} LKR`,
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: { size: 10 },
+                        maxTicksLimit: 8,
+                        maxRotation: 0,
+                    },
+                    border: { display: false },
+                },
+                y: {
+                    grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: { size: 10, family: 'ui-monospace, monospace' },
+                        callback: (v) => v.toFixed(0) + ' LKR',
+                    },
+                    border: { display: false },
+                },
+            },
+        },
+    });
+
+    window.setRange = function (days) {
+        currentRange = days;
+        document.querySelectorAll('.range-tab').forEach(btn => {
+            const active = parseInt(btn.dataset.range) === days;
+            btn.classList.toggle('bg-white', active);
+            btn.classList.toggle('text-[#003580]', active);
+            btn.classList.toggle('shadow-sm', active);
+            btn.classList.toggle('text-slate-500', !active);
+        });
+        data = buildDatasets(days);
+        chart.data.labels   = data.labels;
+        chart.data.datasets = baseDatasets(data);
+        chart.update('active');
+    };
+
+    window.toggleDataset = function (currency) {
+        if (currency === 'usd') {
+            usdVisible = !usdVisible;
+            const btn = document.getElementById('toggleUsd');
+            btn.classList.toggle('bg-[#003580]', usdVisible);
+            btn.classList.toggle('text-white', usdVisible);
+            btn.classList.toggle('text-[#003580]', !usdVisible);
+            btn.classList.toggle('bg-white', !usdVisible);
+        } else {
+            eurVisible = !eurVisible;
+            const btn = document.getElementById('toggleEur');
+            btn.classList.toggle('bg-amber-500', eurVisible);
+            btn.classList.toggle('text-white', eurVisible);
+            btn.classList.toggle('text-amber-600', !eurVisible);
+            btn.classList.toggle('bg-white', !eurVisible);
+        }
+        data = buildDatasets(currentRange);
+        chart.data.datasets = baseDatasets(data);
+        chart.update('active');
+    };
+})();
+</script>
+
 {{-- ───────────────────── HOW IT WORKS ───────────────────── --}}
 <section id="how-it-works" class="bg-[#F0F6FF] py-20 lg:py-28">
     <div class="max-w-6xl mx-auto px-5 sm:px-8">

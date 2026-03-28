@@ -33,7 +33,8 @@ class DatabaseSeeder extends Seeder
             [
                 'currency_from' => 'USD',
                 'currency_to'   => 'LKR',
-                'rate'          => 295.0000,
+                'buy_rate'      => 295.0000,
+                'sell_rate'     => 302.0000,
                 'is_active'     => true,
                 'updated_by'    => $admin->id,
                 'notes'         => 'Initial rate — March 2026',
@@ -43,7 +44,8 @@ class DatabaseSeeder extends Seeder
             [
                 'currency_from' => 'EUR',
                 'currency_to'   => 'LKR',
-                'rate'          => 330.0000,
+                'buy_rate'      => 330.0000,
+                'sell_rate'     => 341.0000,
                 'is_active'     => true,
                 'updated_by'    => $admin->id,
                 'notes'         => 'Initial rate — March 2026',

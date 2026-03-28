@@ -12,8 +12,13 @@ class PaymentReferencePolicy
         return $user->id === $reference->user_id;
     }
 
+    public function update(User $user, PaymentReference $reference): bool
+    {
+        return $user->id === $reference->user_id && $reference->status === 'active';
+    }
+
     public function delete(User $user, PaymentReference $reference): bool
     {
-        return $user->id === $reference->user_id;
+        return $user->id === $reference->user_id && $reference->status === 'active';
     }
 }

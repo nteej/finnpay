@@ -58,6 +58,13 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'paypal' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/paypal.log'),
+            'level'  => 'debug',
+            'days'   => 90,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

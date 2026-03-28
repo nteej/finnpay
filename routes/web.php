@@ -27,12 +27,31 @@ Route::get('/', function () {
         ->latest()
         ->take(3)
         ->get();
-    return view('landing', compact('usdRate', 'eurRate', 'updatedAt', 'featuredFreelancers'));
+
+    // Load exchange rate history from DB for the chart
+    $rateHistory = ['USD' => [], 'EUR' => []];
+    \App\Models\ExchangeRate::whereNotNull('rate_date')
+        ->whereIn('currency_from', ['USD', 'EUR'])
+        ->where('currency_to', 'LKR')
+        ->orderBy('rate_date')
+        ->get(['currency_from', 'rate_date', 'buy_rate', 'sell_rate'])
+        ->each(function ($r) use (&$rateHistory) {
+            $date = $r->rate_date->toDateString();
+            $rateHistory[$r->currency_from][$date] = [
+                'buy'  => (float) $r->buy_rate,
+                'sell' => (float) $r->sell_rate,
+            ];
+        });
+
+    return view('landing', compact('usdRate', 'eurRate', 'updatedAt', 'featuredFreelancers', 'rateHistory'));
 })->name('home');
 
 // Public customer payment page
 Route::get('/pay/{reference}', [CustomerPaymentController::class, 'show'])->name('customer.pay');
 Route::post('/pay/{reference}', [CustomerPaymentController::class, 'pay'])->name('customer.pay.submit');
+
+// PayPal IPN webhook (CSRF exempt — see bootstrap/app.php)
+Route::post('/paypal/ipn', [\App\Http\Controllers\PaypalIpnController::class, 'handle'])->name('paypal.ipn');
 
 // Freelancer onboarding wizard (public, token-based)
 Route::get('/onboarding/{token}', [OnboardingController::class, 'show'])->name('onboarding.show');
@@ -68,7 +87,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsVerified::class])->g
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('references', PaymentReferenceController::class)
-        ->only(['index', 'create', 'store', 'show', 'destroy']);
+        ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
 

@@ -16,7 +16,43 @@
             <span class="text-white font-bold text-xl">FinnPay</span>
         </div>
 
-        @if(session('success'))
+        {{-- PayPal return: success --}}
+        @if($returnStatus === 'success' || $ref->status === 'paid')
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="bg-emerald-500 px-6 py-5 text-center">
+                    <svg class="w-12 h-12 mx-auto text-white mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="text-white font-bold text-xl">Payment Received!</p>
+                    <p class="text-emerald-100 text-sm mt-1">Thank you — your payment has been confirmed.</p>
+                </div>
+                <div class="px-6 py-5 bg-slate-50 border-b border-slate-200">
+                    <p class="text-xs text-slate-500 mb-1">Reference</p>
+                    <p class="font-mono font-bold text-[#003580] text-lg tracking-widest">{{ $ref->reference_number }}</p>
+                    <p class="text-sm text-slate-700 mt-1">{{ $ref->title }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Paid to: <strong>{{ $ref->user->name }}</strong></p>
+                </div>
+                <div class="px-6 py-5 text-center text-sm text-slate-500">
+                    You can close this window. A receipt has been sent to your PayPal email.
+                </div>
+            </div>
+
+        {{-- PayPal return: cancelled --}}
+        @elseif($returnStatus === 'cancel')
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden mb-4">
+                <div class="bg-amber-500 px-6 py-5 text-center">
+                    <svg class="w-10 h-10 mx-auto text-white mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    </svg>
+                    <p class="text-white font-bold text-lg">Payment Cancelled</p>
+                    <p class="text-amber-100 text-sm mt-1">You cancelled the PayPal payment. You can try again below.</p>
+                </div>
+            </div>
+            {{-- Fall through to show the form --}}
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+        {{-- FinnPay direct form: success flash --}}
+        @elseif(session('success'))
             <div class="bg-emerald-500 text-white rounded-2xl p-6 mb-4 text-center">
                 <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -24,8 +60,10 @@
                 <p class="font-semibold text-lg mb-1">Payment Successful!</p>
                 <p class="text-emerald-100 text-sm">{{ session('success') }}</p>
             </div>
-        @endif
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
 
+        {{-- Normal: show payment form --}}
+        @else
         <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
             {{-- Header --}}
             <div class="bg-[#003580] px-6 py-5">
@@ -114,6 +152,7 @@
                 </button>
             </form>
         </div>
+        @endif
 
         <p class="text-center text-slate-500 text-xs mt-6">
             Secured by FinnPay &middot; Freelancer Payment Platform
